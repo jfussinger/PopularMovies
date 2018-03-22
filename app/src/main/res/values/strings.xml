@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">PopularMovies</string>
+
+    <string name="sort_popularMovie">Sort Popular Movies</string>
+
+    <string name="sort_topRatedMovie">Sort Top Rated Movies</string>
+
+    <string name="backdropPath">BackdropPath</string>
+
+    <string name="original_title">Original Title</string>
+
+    <string name="release_date">Release Date</string>
+
+    <string name="AverageRating">Average Rating:</string>
+
+    <string name="vote_average">8.3</string>
+
+    <string name="overview">Overview</string>
+
+    <string name="apiKey">029b946e032d155c1bd540ac29655eb3</string>
+</resources>
