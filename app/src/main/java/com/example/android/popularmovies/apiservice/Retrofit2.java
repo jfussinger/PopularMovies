@@ -5,15 +5,12 @@ package com.example.android.popularmovies.apiservice;
 //https://github.com/codepath/android_guides/wiki/Consuming-APIs-with-Retrofit
 //https://github.com/square/retrofit
 
-import com.example.android.popularmovies.R;
-
-import retrofit2.Callback;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Retrofit2 {
 
-    public static final String BASE_URL = "http://api.themoviedb.org/";
+    public static final String BASE_URL = "http://api.themoviedb.org/3/";
 
     public static Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(BASE_URL)

@@ -45,6 +45,13 @@ public class PopularMovies implements Serializable {
     private String Release_Date;
 
     /**
+     * popularity is the popularity of the popular movie
+     */
+    @SerializedName("popularity")
+    @Expose
+    private Double Popularity;
+
+    /**
      * Returns the posterPath of the popular movie.
      */
     public String getPoster_Path() {
@@ -93,5 +100,15 @@ public class PopularMovies implements Serializable {
 
     //Set the release_date
     public void setRelease_Date (String release_date) { this.Release_Date = release_date; }
+
+    /**
+     * Returns the popularity of the popular movie.
+     */
+    public Double getPopularity() {
+        return Popularity;
+    }
+
+    //Set the popularity
+    public void setPopularity (Double popularity) { this.Popularity = popularity; }
 
 }

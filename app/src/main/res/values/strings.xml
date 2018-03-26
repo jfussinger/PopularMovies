@@ -17,5 +17,7 @@
 
     <string name="overview">Overview</string>
 
-    <string name="apiKey">ADD API KEY</string>
+    //TODO ADD API KEY
+
+    <string name="apiKey">ADD_YOUR_API_KEY</string>
 </resources>
