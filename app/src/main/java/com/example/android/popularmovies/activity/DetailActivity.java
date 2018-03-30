@@ -22,7 +22,7 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.movieposter_detail);
+        setContentView(R.layout.activity_detail);
 
         backdropPath = (ImageView) findViewById(R.id.backdropPath);
         OriginalTitle = (TextView)findViewById(R.id.original_title);

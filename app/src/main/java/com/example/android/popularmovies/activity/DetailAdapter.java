@@ -38,7 +38,7 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
         ViewHolder viewHolder;
         PopularMovies PopularMovies = getItem(position);
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.popularmovies_list_item, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_main_list_item, parent, false);
             viewHolder = new ViewHolder();
             viewHolder.backdropPath = (ImageView) convertView.findViewById(R.id.backdropPath);
             viewHolder.OriginalTitle = (TextView) convertView.findViewById(R.id.original_title);
