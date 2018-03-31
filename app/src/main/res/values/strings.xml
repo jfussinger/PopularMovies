@@ -29,7 +29,7 @@
 
     //For detail activity
 
-    <string name="backdropPath">BackdropPath</string>
+    <string name="posterPath">PosterPath</string>
 
     <string name="original_title">Original Title</string>
 

@@ -1,6 +1,8 @@
 package com.example.android.popularmovies.activity;
 
 import android.content.Context;
+import android.net.Uri;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +19,7 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
 
     private static class ViewHolder {
 
-        ImageView backdropPath;
+        ImageView posterPath;
         TextView OriginalTitle;
         TextView ReleaseDate;
         TextView VoteAverage;
@@ -40,7 +42,7 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_main_list_item, parent, false);
             viewHolder = new ViewHolder();
-            viewHolder.backdropPath = (ImageView) convertView.findViewById(R.id.backdropPath);
+            viewHolder.posterPath = (ImageView) convertView.findViewById(R.id.posterPath);
             viewHolder.OriginalTitle = (TextView) convertView.findViewById(R.id.original_title);
             viewHolder.ReleaseDate = (TextView) convertView.findViewById(R.id.release_date);
             viewHolder.VoteAverage = (TextView) convertView.findViewById(R.id.vote_average);
@@ -53,8 +55,31 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        final String backdropPath = PopularMovies.getPoster_Path();
-        Glide.with(getContext()).load(backdropPath).placeholder(R.drawable.imagenotfound).into(viewHolder.backdropPath);
+        // TODO Build poster_path URL
+        // https://developers.themoviedb.org/3/getting-started/images
+        //
+        // 1. The base URL will look like: http://image.tmdb.org/t/p/
+        // 2. Then you will need a ‘size’, which will be one of the following:
+        // "w92", "w154", "w185", "w342", "w500", "w780", or "original".
+        // For most phones we recommend using “w185”.
+        // 3. And finally the poster path returned by the query, in this case “/nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg”
+        //
+        // Combining these three parts gives us a final url of
+        // http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg
+
+        //https://stackoverflow.com/questions/47368652/passing-poster-path-from-one-activity-to-another
+
+        final String base_url = "http://image.tmdb.org/t/p/";
+        final String file_size = "w185";
+        final String file_path = PopularMovies.getPoster_Path();
+
+        String uri = Uri.parse(base_url)
+                .buildUpon()
+                .appendQueryParameter(file_size, file_path)
+                .build().toString();
+
+        final String posterPath = uri;
+        Glide.with(getContext()).load(posterPath).placeholder(R.drawable.imagenotfound).into(viewHolder.posterPath);
 
         viewHolder.OriginalTitle.setText(PopularMovies.getOriginalTitle());
         viewHolder.ReleaseDate.setText(PopularMovies.getRelease_Date());

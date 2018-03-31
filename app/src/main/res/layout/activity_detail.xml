@@ -10,8 +10,8 @@
         android:layout_height="wrap_content">
 
         <ImageView
-            android:id="@+id/backdropPath"
-            android:contentDescription="@string/backdropPath"
+            android:id="@+id/posterPath"
+            android:contentDescription="@string/posterPath"
             android:src="@drawable/imagenotfound"
             android:layout_width="200dp"
             android:layout_height="500dp"

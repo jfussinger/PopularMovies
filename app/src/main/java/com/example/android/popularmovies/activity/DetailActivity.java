@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class DetailActivity extends AppCompatActivity {
 
     private DetailAdapter Adapter;
-    ImageView backdropPath;
+    ImageView posterPath;
     TextView OriginalTitle;
     TextView ReleaseDate;
     TextView VoteAverage;
@@ -24,7 +24,7 @@ public class DetailActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_detail);
 
-        backdropPath = (ImageView) findViewById(R.id.backdropPath);
+        posterPath = (ImageView) findViewById(R.id.posterPath);
         OriginalTitle = (TextView)findViewById(R.id.original_title);
         ReleaseDate = (TextView)findViewById(R.id.release_date);
         VoteAverage = (TextView)findViewById(R.id.vote_average);
