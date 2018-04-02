@@ -1,8 +1,6 @@
-package com.example.android.popularmovies.activity;
+package com.example.android.popularmovies.model;
 
 //https://www.androidhive.info/2016/05/android-working-with-retrofit-http-library/
-
-import android.graphics.Movie;
 
 import com.google.gson.annotations.SerializedName;
 

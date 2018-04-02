@@ -93,8 +93,6 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
 
         switch (item.getItemId()) {
-            case R.id.action_settings:
-                return true;
             // Respond to a click on the "sortPopularMovie" menu option
             case R.id.action_sort_popularMovie:
                 sortPopularMovie();

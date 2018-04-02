@@ -9,7 +9,7 @@ package com.example.android.popularmovies.apiservice;
 // JSON Pretty Print http://api.themoviedb.org/3/movie/popular?api_key=[YOUR_API_KEY]
 // JSON Pretty Print http://api.themoviedb.org/3/movie/top_rated?api_key=[YOUR_API_KEY]
 
-import com.example.android.popularmovies.activity.MovieResponse;
+import com.example.android.popularmovies.model.MovieResponse;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

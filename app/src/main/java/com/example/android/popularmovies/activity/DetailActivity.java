@@ -6,6 +6,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.adapter.DetailAdapter;
+import com.example.android.popularmovies.model.Movie;
 
 import java.util.ArrayList;
 
@@ -30,6 +32,6 @@ public class DetailActivity extends AppCompatActivity {
         VoteAverage = (TextView)findViewById(R.id.vote_average);
         Overview = (TextView) findViewById(R.id.overview);
 
-        Adapter = new DetailAdapter(this, new ArrayList<PopularMovies>());
+        Adapter = new DetailAdapter(this, new ArrayList<Movie>());
     }
 }

@@ -1,8 +1,7 @@
-package com.example.android.popularmovies.activity;
+package com.example.android.popularmovies.adapter;
 
 import android.content.Context;
 import android.net.Uri;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +11,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.model.Movie;
 
 import java.util.List;
 
-public class DetailAdapter extends ArrayAdapter<PopularMovies> {
+public class DetailAdapter extends ArrayAdapter<Movie> {
 
     private static class ViewHolder {
 
@@ -27,8 +27,8 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
 
     }
 
-    public DetailAdapter(Context context, List<PopularMovies> popularmovies) {
-        super(context, 0, popularmovies);
+    public DetailAdapter(Context context, List<Movie> movies) {
+        super(context, 0, movies);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
         // otherwise, if convertView is null, then inflate a new list item layout.
 
         ViewHolder viewHolder;
-        PopularMovies PopularMovies = getItem(position);
+        Movie Movies = getItem(position);
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_main_list_item, parent, false);
             viewHolder = new ViewHolder();
@@ -71,7 +71,7 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
 
         final String base_url = "http://image.tmdb.org/t/p/";
         final String file_size = "w185";
-        final String file_path = PopularMovies.getPoster_Path();
+        final String file_path = Movies.getPosterPath();
 
         String uri = Uri.parse(base_url)
                 .buildUpon()
@@ -81,8 +81,8 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
         final String posterPath = uri;
         Glide.with(getContext()).load(posterPath).placeholder(R.drawable.imagenotfound).into(viewHolder.posterPath);
 
-        viewHolder.OriginalTitle.setText(PopularMovies.getOriginalTitle());
-        viewHolder.ReleaseDate.setText(PopularMovies.getRelease_Date());
+        viewHolder.OriginalTitle.setText(Movies.getOriginalTitle());
+        viewHolder.ReleaseDate.setText(Movies.getReleaseDate());
 
         //https://stackoverflow.com/questions/16334820/how-to-convert-double-to-string-in-android
         //double Vote_Average = PopularMovies.getVote_Average();
@@ -92,8 +92,8 @@ public class DetailAdapter extends ArrayAdapter<PopularMovies> {
         //viewHolder.VoteAverage.setText(Double.toString(PopularMovies.getVote_Average()));
 
         //https://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
-        viewHolder.VoteAverage.setText(String.format("0.00" ,PopularMovies.getVote_Average()));
-        viewHolder.Overview.setText(PopularMovies.getOverview());
+        viewHolder.VoteAverage.setText(String.format("0.00" ,Movies.getVoteAverage()));
+        viewHolder.Overview.setText(Movies.getOverview());
 
         return convertView;
     }

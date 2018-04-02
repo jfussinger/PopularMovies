@@ -1,4 +1,4 @@
-package com.example.android.popularmovies.activity;
+package com.example.android.popularmovies.adapter;
 
 import android.content.Context;
 import android.net.Uri;
@@ -10,18 +10,19 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.model.Movie;
 
 import java.util.List;
 
-public class MainAdapter extends ArrayAdapter<PopularMovies> {
+public class MainAdapter extends ArrayAdapter<Movie> {
 
     private static class ViewHolder {
 
         ImageView posterPath;
     }
 
-    public MainAdapter(Context context, List<PopularMovies> popularmovies) {
-        super(context, 0, popularmovies);
+    public MainAdapter(Context context, List<Movie> movies) {
+        super(context, 0, movies);
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -30,7 +31,7 @@ public class MainAdapter extends ArrayAdapter<PopularMovies> {
         // otherwise, if convertView is null, then inflate a new list item layout.
 
         MainAdapter.ViewHolder viewHolder;
-        PopularMovies PopularMovies = getItem(position);
+        Movie Movies = getItem(position);
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_main_list_item, parent, false);
             viewHolder = new MainAdapter.ViewHolder();
@@ -59,7 +60,7 @@ public class MainAdapter extends ArrayAdapter<PopularMovies> {
 
         final String base_url = "http://image.tmdb.org/t/p/";
         final String file_size = "w185";
-        final String file_path = PopularMovies.getPoster_Path();
+        final String file_path = Movies.getPosterPath();
 
         String uri = Uri.parse(base_url)
                 .buildUpon()

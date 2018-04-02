@@ -13,7 +13,7 @@
         android:numColumns="2"
         android:verticalSpacing="24dp"
         android:horizontalSpacing="10dp"
-        android:stretchMode="spacingWidthUniform"/>
+        android:stretchMode="spacingWidthUniform" />
 
     <!-- Empty view is only visible when the list has no items. -->
     <TextView

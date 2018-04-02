@@ -1,7 +1,6 @@
 package com.example.android.popularmovies.fragments;
 
 import android.content.Intent;
-import android.graphics.Movie;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,9 +13,9 @@ import android.widget.Toast;
 
 import com.example.android.popularmovies.R;
 import com.example.android.popularmovies.activity.DetailActivity;
-import com.example.android.popularmovies.activity.MainAdapter;
-import com.example.android.popularmovies.activity.MovieResponse;
-import com.example.android.popularmovies.activity.PopularMovies;
+import com.example.android.popularmovies.adapter.MainAdapter;
+import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.model.MovieResponse;
 import com.example.android.popularmovies.apiservice.APIService;
 import com.example.android.popularmovies.apiservice.Retrofit2;
 
@@ -27,6 +26,8 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+//https://www.androidhive.info/2016/05/android-working-with-retrofit-http-library/
 
 public class PopularMovieFragment extends Fragment {
 
@@ -40,6 +41,8 @@ public class PopularMovieFragment extends Fragment {
 
     private MainAdapter Adapter;
 
+    private List<Movie> movies;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,7 +53,7 @@ public class PopularMovieFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_popularmovie, container, false);
+        final View view = inflater.inflate(R.layout.fragment_popularmovie, container, false);
 
         //https://stackoverflow.com/questions/10770055/use-toast-inside-fragment
 
@@ -58,8 +61,11 @@ public class PopularMovieFragment extends Fragment {
             Toast.makeText(getActivity(), "Insert your API KEY first from The Movie Db", Toast.LENGTH_LONG).show();
         }
 
-        Adapter = new MainAdapter(getActivity(), new ArrayList<PopularMovies>());
-        popularmoviesGridview = (GridView) view.findViewById(R.id.gridview_fragmentPopularMovie);
+        movies = new ArrayList<Movie>();
+
+        //Adapter = new MainAdapter(getActivity(), popularmovies);
+        final GridView popularmoviesGridview = (GridView) view.findViewById(R.id.gridview_fragmentPopularMovie);
+        popularmoviesGridview.setAdapter(Adapter);
 
         //https://github.com/codepath/android-networking-persistence-sample-moviedb/blob/master/app/src/main/java/com/shrikant/themoviedb/fragments/TopRatedMoviesFragment.java
 
@@ -78,8 +84,8 @@ public class PopularMovieFragment extends Fragment {
             callPopularMovie.enqueue(new Callback<MovieResponse>() {
 
                 public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
-                    List<Movie> PopularMovie = response.body().getResults();
-                    popularmoviesGridview.setAdapter(Adapter);
+                    List<Movie> movies = response.body().getResults();
+                    popularmoviesGridview.setAdapter(new MainAdapter(getActivity(),movies));
                 }
 
                 public void onFailure(Call<MovieResponse> call, Throwable t) {
