@@ -1,7 +1,7 @@
 package com.example.android.popularmovies.activity;
 
 //https://developer.android.com/guide/topics/ui/layout/gridview.html
-////https://github.com/Mayur-007/iSearch
+//https://github.com/Mayur-007/iSearch
 //https://www.androidhive.info/2016/01/android-working-with-recycler-view/
 
 //https://stackoverflow.com/questions/47393110/how-to-add-onclicklistener-for-grid-view-which-opens-new-activity
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity
                 setTitle(R.string.nav_popularMovie);
                 break;
             case R.id.nav_topRatedMovie:
-                Log.i(TAG, "popularMovie selected");
+                Log.i(TAG, "topRatedMovie selected");
                 fragmentClass = TopRatedMovieFragment.class;
                 setTitle(R.string.nav_topRatedMovie);
                 break;

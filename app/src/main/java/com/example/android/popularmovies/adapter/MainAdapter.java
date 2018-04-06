@@ -21,11 +21,12 @@ public class MainAdapter extends ArrayAdapter<Movie> {
         ImageView posterPath;
     }
 
-    public MainAdapter(Context context, List<Movie> movies) {
-        super(context, 0, movies);
+    public MainAdapter(Context context, List<Movie> movieList) {
+
+        super(context, 0, movieList);
     }
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
 
         // Check if there is an existing list item view (called convertView) that we can reuse,
         // otherwise, if convertView is null, then inflate a new list item layout.
@@ -35,8 +36,8 @@ public class MainAdapter extends ArrayAdapter<Movie> {
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_main_list_item, parent, false);
             viewHolder = new MainAdapter.ViewHolder();
-            viewHolder.posterPath = (ImageView) convertView.findViewById(R.id.posterPath);
-
+            viewHolder.posterPath = (ImageView) convertView.findViewById(R.id.grid_item_posterPath);
+            viewHolder.posterPath.setAdjustViewBounds(true);
             // Cache the viewHolder object inside the fresh view
             convertView.setTag(viewHolder);
         } else {
@@ -59,17 +60,12 @@ public class MainAdapter extends ArrayAdapter<Movie> {
         //https://stackoverflow.com/questions/47368652/passing-poster-path-from-one-activity-to-another
 
         final String base_url = "http://image.tmdb.org/t/p/";
-        final String file_size = "w185";
-        final String file_path = Movies.getPosterPath();
+        final String file_size = "w185/";
+        final String posterPath = Movies.getPosterPath();
 
-        String uri = Uri.parse(base_url)
-                .buildUpon()
-                .appendQueryParameter(file_size, file_path)
-                .build().toString();
-
-        final String posterPath = uri;
-        Glide.with(getContext()).load(posterPath).placeholder(R.drawable.imagenotfound).into(viewHolder.posterPath);
+        Glide.with(getContext()).load(base_url + file_size + posterPath).placeholder(R.drawable.imagenotfound).into(viewHolder.posterPath);
 
         return convertView;
     }
 }
+
