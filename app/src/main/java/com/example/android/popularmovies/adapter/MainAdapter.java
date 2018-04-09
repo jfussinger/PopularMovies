@@ -1,6 +1,7 @@
 package com.example.android.popularmovies.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.activity.DetailActivity;
 import com.example.android.popularmovies.model.Movie;
 
 import java.util.List;
@@ -25,7 +27,7 @@ public class MainAdapter extends ArrayAdapter<Movie> {
         super(context, 0, movieList);
     }
     @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
 
         // Check if there is an existing list item view (called convertView) that we can reuse,
         // otherwise, if convertView is null, then inflate a new list item layout.
@@ -62,7 +64,10 @@ public class MainAdapter extends ArrayAdapter<Movie> {
         final String file_size = "w185/";
         final String posterPath = Movies.getPosterPath();
 
-        Glide.with(getContext()).load(base_url + file_size + posterPath).placeholder(R.drawable.imagenotfound).into(viewHolder.posterPath);
+        Glide.with(getContext())
+                .load(base_url + file_size + posterPath)
+                .placeholder(R.drawable.placeholderimagemainactivity)
+                .into(viewHolder.posterPath);
 
         return convertView;
     }

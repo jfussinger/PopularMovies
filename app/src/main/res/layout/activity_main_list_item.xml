@@ -8,7 +8,7 @@
     <ImageView
         android:id="@+id/grid_item_posterPath"
         android:contentDescription="@string/posterPath"
-        android:src="@drawable/imagenotfound"
+        android:src="@drawable/placeholderimagemainactivity"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:adjustViewBounds="true"/>

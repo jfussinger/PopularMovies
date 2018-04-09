@@ -18,6 +18,8 @@
 
     <string name="nav_topRatedMovie">Top Rated</string>
 
+    <!-- Error messages-->
+    <string name="detail_error_message">Movie detail not available</string>
 
     //For menu sort
 
@@ -28,6 +30,8 @@
     //For detail activity
 
     <string name="posterPath">PosterPath</string>
+
+    <string name="backdropPath">BackdropPath</string>
 
     <string name="original_title">Original Title</string>
 

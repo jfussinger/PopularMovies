@@ -19,7 +19,6 @@ import com.example.android.popularmovies.model.MovieResponse;
 import com.example.android.popularmovies.apiservice.APIService;
 import com.example.android.popularmovies.apiservice.Retrofit2;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import retrofit2.Call;
@@ -38,7 +37,8 @@ public class PopularMovieFragment extends Fragment {
 
     private GridView popularmoviesGridview;
 
-    private ArrayList<Movie> moviesPopular = new ArrayList<Movie>();
+    private ArrayList<Movie> movieList = new ArrayList<Movie>();
+    //private ArrayList<Movie> moviesPopular = new ArrayList<Movie>();
 
     private MainAdapter moviesPopularAdapter;
 
@@ -50,50 +50,41 @@ public class PopularMovieFragment extends Fragment {
             Toast.makeText(getActivity(), "Insert your API KEY first from The Movie Db", Toast.LENGTH_LONG).show();
         }
 
-        //https://github.com/codepath/android-networking-persistence-sample-moviedb/blob/master/app/src/main/java/com/shrikant/themoviedb/fragments/TopRatedMoviesFragment.java
+        //https://stackoverflow.com/questions/39378586/how-to-create-multiple-retrofit-callbacks-in-same-fragment-android
+        //https://github.com/codepath/android_guides/wiki/Consuming-APIs-with-Retrofit
 
-        if (!isOnline()) {
-            Toast.makeText(getContext(), "Your device is not online, " +
-                            "check wifi and try again!",
-                    Toast.LENGTH_LONG).show();
-        } else {
+        APIService apiService = Retrofit2.retrofit.create(APIService.class);
 
-            //https://stackoverflow.com/questions/39378586/how-to-create-multiple-retrofit-callbacks-in-same-fragment-android
-            //https://github.com/codepath/android_guides/wiki/Consuming-APIs-with-Retrofit
+        Call<MovieResponse> callPopularMovie = apiService.getPopularMovie(getString(R.string.apiKey));
+        callPopularMovie.enqueue(new Callback<MovieResponse>() {
 
-            APIService apiService = Retrofit2.retrofit.create(APIService.class);
-
-            Call<MovieResponse> callPopularMovie = apiService.getPopularMovie(getString(R.string.apiKey));
-            callPopularMovie.enqueue(new Callback<MovieResponse>() {
-
-                //https://stackoverflow.com/questions/35254843/gridview-setadapter-method-gives-nullpointerexception
-                @Override
-                public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
-                    MovieResponse popularMovieResponse = response.body();
-                    if (popularMovieResponse != null) {
-                        moviesPopular = (ArrayList<Movie>) popularMovieResponse.getResults();
-                        //moviesPopularAdapter.clear();// no need for this line in the first call
-                        moviesPopularAdapter.addAll(moviesPopular);
-                        moviesPopularAdapter.notifyDataSetChanged();
-                        popularmoviesGridview.setAdapter(new MainAdapter(getActivity(), moviesPopular));
-                    }
-                    Log.d(TAG, "Number of movies received: " + moviesPopular.size());
-                    Log.d(TAG, "PosterPath:" + moviesPopular.get(0).getPosterPath());
-                    Log.d(TAG, "Title:" + moviesPopular.get(0).getTitle());
-                    Log.d(TAG, "Release Date:" + moviesPopular.get(0).getReleaseDate());
-                    Log.d(TAG, "Average Rating:" + moviesPopular.get(0).getVoteAverage());
-                    Log.d(TAG, "Overview:" + moviesPopular.get(0).getOverview());
-                    Log.d(TAG, "Popularity:" + moviesPopular.get(0).getPopularity());
+            //https://stackoverflow.com/questions/35254843/gridview-setadapter-method-gives-nullpointerexception
+            @Override
+            public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
+                MovieResponse popularMovieResponse = response.body();
+                if (popularMovieResponse != null) {
+                    movieList = (ArrayList<Movie>) popularMovieResponse.getResults();
+                    //moviesPopularAdapter.clear();// no need for this line in the first call
+                    moviesPopularAdapter.addAll(movieList);
+                    moviesPopularAdapter.notifyDataSetChanged();
+                    popularmoviesGridview.setAdapter(new MainAdapter(getActivity(), movieList));
                 }
+                Log.d(TAG, "Number of movies received: " + movieList.size());
+                Log.d(TAG, "PosterPath:" + movieList.get(0).getPosterPath());
+                Log.d(TAG, "Title:" + movieList.get(0).getTitle());
+                Log.d(TAG, "Release Date:" + movieList.get(0).getReleaseDate());
+                Log.d(TAG, "Average Rating:" + movieList.get(0).getVoteAverage());
+                Log.d(TAG, "Overview:" + movieList.get(0).getOverview());
+                Log.d(TAG, "Popularity:" + movieList.get(0).getPopularity());
+            }
 
-                @Override
-                public void onFailure(Call<MovieResponse> call, Throwable t) {
-                    // Log error here since request failed
-                    Log.e(TAG, t.toString());
-                }
+            @Override
+            public void onFailure(Call<MovieResponse> call, Throwable t) {
+                // Log error here since request failed
+                Log.e(TAG, t.toString());
+            }
 
-            });
-        }
+        });
 
     }
 
@@ -109,7 +100,7 @@ public class PopularMovieFragment extends Fragment {
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_popularmovie, container, false);
 
-        moviesPopularAdapter = new MainAdapter(getActivity(), moviesPopular);
+        moviesPopularAdapter = new MainAdapter(getActivity(), movieList);
 
         onLoadMovies();
 
@@ -117,17 +108,20 @@ public class PopularMovieFragment extends Fragment {
         //https://stackoverflow.com/questions/22890314/gridview-is-not-shown-in-an-example-with-navigation-drawer
 
         popularmoviesGridview = (GridView) view.findViewById(R.id.gridview_fragmentPopularMovie);
-        popularmoviesGridview.setAdapter(new MainAdapter(getActivity(), moviesPopular));
+        popularmoviesGridview.setAdapter(new MainAdapter(getActivity(), movieList));
 
         //https://stackoverflow.com/questions/27180933/gridview-with-gridviewadapter-how-to-set-onclick-listener-in-gridview-and-not-gr
+
+        //TODO add Fragment intent to DetailActivity
+        //https://discussions.udacity.com/t/how-do-i-use-intent-to-get-and-display-movie-details/27778/5
 
         popularmoviesGridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
-                Intent detailActivityIntent = new Intent(getActivity(), DetailActivity.class);
-
-                // Start the new activity
-                startActivity(detailActivityIntent);
+                Movie Movies = moviesPopularAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                intent.putExtra("movie", Movies);
+                startActivity(intent);
             }
         });
 
@@ -143,13 +137,4 @@ public class PopularMovieFragment extends Fragment {
         super.onResume();
     }
 
-    protected boolean isOnline() {
-        Runtime runtime = Runtime.getRuntime();
-        try {
-            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
-            int     exitValue = ipProcess.waitFor();
-            return (exitValue == 0);
-        } catch (InterruptedException | IOException e) { e.printStackTrace(); }
-        return false;
-    }
 }

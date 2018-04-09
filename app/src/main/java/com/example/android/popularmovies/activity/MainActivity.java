@@ -9,14 +9,14 @@ package com.example.android.popularmovies.activity;
 //https://www.androidhive.info/2015/04/android-getting-started-with-material-design/
 //https://www.androidhive.info/2013/11/android-sliding-menu-using-navigation-drawer/
 
+import android.support.design.widget.NavigationView;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -148,5 +148,6 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
             return true;
     }
+
 }
 

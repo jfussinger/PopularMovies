@@ -27,11 +27,15 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         posterPath = (ImageView) findViewById(R.id.posterPath);
-        OriginalTitle = (TextView)findViewById(R.id.original_title);
-        ReleaseDate = (TextView)findViewById(R.id.release_date);
-        VoteAverage = (TextView)findViewById(R.id.vote_average);
+        OriginalTitle = (TextView) findViewById(R.id.original_title);
+        ReleaseDate = (TextView) findViewById(R.id.release_date);
+        VoteAverage = (TextView) findViewById(R.id.vote_average);
         Overview = (TextView) findViewById(R.id.overview);
 
         Adapter = new DetailAdapter(this, new ArrayList<Movie>());
+
+        Movie Movies = getIntent().getParcelableExtra("movie");
+        //Movie movie = getIntent().getSerializableExtra("movie");
+
     }
 }

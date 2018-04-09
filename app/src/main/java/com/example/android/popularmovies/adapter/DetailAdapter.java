@@ -1,7 +1,6 @@
 package com.example.android.popularmovies.adapter;
 
 import android.content.Context;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +39,7 @@ public class DetailAdapter extends ArrayAdapter<Movie> {
         ViewHolder viewHolder;
         Movie Movies = getItem(position);
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_main_list_item, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.activity_detail, parent, false);
             viewHolder = new ViewHolder();
             viewHolder.posterPath = (ImageView) convertView.findViewById(R.id.posterPath);
             viewHolder.posterPath.setAdjustViewBounds(true);
@@ -71,20 +70,23 @@ public class DetailAdapter extends ArrayAdapter<Movie> {
         //https://stackoverflow.com/questions/47368652/passing-poster-path-from-one-activity-to-another
 
         final String base_url = "http://image.tmdb.org/t/p/";
-        final String file_size = "w185/";
+        final String file_size = "w500/";
         final String posterPath = Movies.getPosterPath();
 
-        Glide.with(getContext()).load(base_url + file_size + posterPath).placeholder(R.drawable.imagenotfound).into(viewHolder.posterPath);
+        Glide.with(getContext())
+                .load(base_url + file_size + posterPath)
+                .placeholder(R.drawable.placeholderimagedetailactivity)
+                .into(viewHolder.posterPath);
 
         viewHolder.OriginalTitle.setText(Movies.getOriginalTitle());
         viewHolder.ReleaseDate.setText(Movies.getReleaseDate());
 
         //https://stackoverflow.com/questions/16334820/how-to-convert-double-to-string-in-android
-        //double Vote_Average = PopularMovies.getVote_Average();
-        //String voteAverageString = String.valueOf(Vote_Average);
+        //double Vote_Average = Movies.getVoteAverage();
+        //String vote_AverageString = String.valueOf(Vote_Average);
 
         //https://stackoverflow.com/questions/35495421/android-passing-a-double-to-a-textview
-        //viewHolder.VoteAverage.setText(Double.toString(PopularMovies.getVote_Average()));
+        //viewHolder.VoteAverage.setText(Double.toString(Movies.getVoteAverage()));
 
         //https://stackoverflow.com/questions/153724/how-to-round-a-number-to-n-decimal-places-in-java
         viewHolder.VoteAverage.setText(String.format("0.00" ,Movies.getVoteAverage()));
