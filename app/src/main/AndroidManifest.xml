@@ -20,14 +20,19 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name="activity.DetailActivity"
-            android:parentActivityName=".activity.MainActivity"/>
-
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/app_name"
+            android:parentActivityName=".activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="activity.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

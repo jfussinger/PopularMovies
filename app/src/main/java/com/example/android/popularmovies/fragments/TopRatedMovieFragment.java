@@ -118,7 +118,7 @@ public class TopRatedMovieFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
                 Movie Movies = moviesTopRatedAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                Intent intent = new Intent(getContext(), DetailActivity.class);
                 intent.putExtra("movie", Movies);
                 startActivity(intent);
             }

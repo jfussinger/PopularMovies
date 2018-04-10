@@ -1,9 +1,11 @@
 package com.example.android.popularmovies.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.popularmovies.R;
 import com.example.android.popularmovies.adapter.DetailAdapter;
@@ -13,7 +15,9 @@ import java.util.ArrayList;
 
 public class DetailActivity extends AppCompatActivity {
 
-    private DetailAdapter Adapter;
+    private DetailAdapter detailAdapter;
+    private ArrayList<Movie> movieList = new ArrayList<Movie>();
+    Movie Movies;
     ImageView posterPath;
     TextView OriginalTitle;
     TextView ReleaseDate;
@@ -32,10 +36,16 @@ public class DetailActivity extends AppCompatActivity {
         VoteAverage = (TextView) findViewById(R.id.vote_average);
         Overview = (TextView) findViewById(R.id.overview);
 
-        Adapter = new DetailAdapter(this, new ArrayList<Movie>());
+        detailAdapter = new DetailAdapter(this, movieList);
 
-        Movie Movies = getIntent().getParcelableExtra("movie");
-        //Movie movie = getIntent().getSerializableExtra("movie");
+        Intent intent = getIntent();
 
+        if (intent.hasExtra("movie")) {
+            Movies = getIntent().getParcelableExtra("movie");
+            //Movie Movies = getIntent().getSerializableExtra("movie");
+
+        }else{
+            Toast.makeText(this, "Insert your API KEY first from The Movie Db", Toast.LENGTH_SHORT).show();
+        }
     }
 }

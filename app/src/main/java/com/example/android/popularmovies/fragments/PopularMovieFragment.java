@@ -1,5 +1,6 @@
 package com.example.android.popularmovies.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.example.android.popularmovies.apiservice.APIService;
 import com.example.android.popularmovies.apiservice.Retrofit2;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -119,7 +121,7 @@ public class PopularMovieFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View v,
                                     int position, long id) {
                 Movie Movies = moviesPopularAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                Intent intent = new Intent(getContext(), DetailActivity.class);
                 intent.putExtra("movie", Movies);
                 startActivity(intent);
             }
