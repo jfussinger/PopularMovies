@@ -17,7 +17,7 @@ public class DetailActivity extends AppCompatActivity {
 
     private DetailAdapter detailAdapter;
     private ArrayList<Movie> movieList = new ArrayList<Movie>();
-    Movie Movies;
+    //Movie Movies;
     ImageView posterPath;
     TextView OriginalTitle;
     TextView ReleaseDate;
@@ -38,11 +38,15 @@ public class DetailActivity extends AppCompatActivity {
 
         detailAdapter = new DetailAdapter(this, movieList);
 
+        //https://discussions.udacity.com/t/how-do-i-use-intent-to-get-and-display-movie-details/27778/11
+        //TODO Use Parcelable, it's faster than Serializable
+        //http://www.developerphil.com/parcelable-vs-serializable/
+
         Intent intent = getIntent();
 
         if (intent.hasExtra("movie")) {
-            Movies = getIntent().getParcelableExtra("movie");
-            //Movie Movies = getIntent().getSerializableExtra("movie");
+            intent.getSerializableExtra("movie");
+            //Movie movie = getIntent().getParcelableExtra("movie");
 
         }else{
             Toast.makeText(this, "Insert your API KEY first from The Movie Db", Toast.LENGTH_SHORT).show();

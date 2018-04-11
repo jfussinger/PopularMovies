@@ -21,7 +21,6 @@ import com.example.android.popularmovies.apiservice.APIService;
 import com.example.android.popularmovies.apiservice.Retrofit2;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
