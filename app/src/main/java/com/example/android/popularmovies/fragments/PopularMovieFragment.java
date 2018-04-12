@@ -1,6 +1,5 @@
 package com.example.android.popularmovies.fragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -60,6 +59,7 @@ public class PopularMovieFragment extends Fragment {
         callPopularMovie.enqueue(new Callback<MovieResponse>() {
 
             //https://stackoverflow.com/questions/35254843/gridview-setadapter-method-gives-nullpointerexception
+
             @Override
             public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
                 MovieResponse popularMovieResponse = response.body();
@@ -89,11 +89,25 @@ public class PopularMovieFragment extends Fragment {
 
     }
 
+    //https://github.com/udacity/android-custom-arrayadapter/blob/parcelable/app/src/main/java/demo/example/com/customarrayadapter/MainActivityFragment.java
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        if(savedInstanceState == null || !savedInstanceState.containsKey("movie")) {
+            movieList = new ArrayList<Movie>();
+        }
+        else {
+            movieList = savedInstanceState.getParcelableArrayList("movie");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("movie", movieList);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
