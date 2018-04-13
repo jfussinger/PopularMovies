@@ -7,17 +7,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.android.popularmovies.R;
-import com.example.android.popularmovies.adapter.DetailAdapter;
 import com.example.android.popularmovies.model.Movie;
-
-import java.util.ArrayList;
 
 public class DetailActivity extends AppCompatActivity {
 
-    private DetailAdapter detailAdapter;
-    private ArrayList<Movie> movieList = new ArrayList<Movie>();
     Movie Movies;
+    int movie_id;
+    String movieThumbnail, movieTitle, dateOfRelease, userRating, movieSynopsis;
     ImageView posterPath;
     TextView OriginalTitle;
     TextView ReleaseDate;
@@ -36,8 +34,6 @@ public class DetailActivity extends AppCompatActivity {
         VoteAverage = (TextView) findViewById(R.id.vote_average);
         Overview = (TextView) findViewById(R.id.overview);
 
-        detailAdapter = new DetailAdapter(this, movieList);
-
         //https://discussions.udacity.com/t/how-do-i-use-intent-to-get-and-display-movie-details/27778/11
         //TODO Use Parcelable, it's faster than Serializable
         //http://www.developerphil.com/parcelable-vs-serializable/
@@ -47,8 +43,28 @@ public class DetailActivity extends AppCompatActivity {
 
         if (intent.hasExtra("movie")) {
             Movies = getIntent().getParcelableExtra("movie");
-            //intent.getSerializableExtra("movie");
-            //Movie movie = getIntent().getParcelableExtra("movie");
+
+            movieThumbnail = Movies.getPosterPath();
+            movieTitle = Movies.getOriginalTitle();
+            dateOfRelease = Movies.getReleaseDate();
+            userRating = Double.toString(Movies.getVoteAverage());
+            movieSynopsis = Movies.getOverview();
+
+            movie_id = Movies.getId();
+
+            final String base_url = "http://image.tmdb.org/t/p/";
+            final String file_size = "w500/";
+            final String posterPathString = Movies.getPosterPath();
+
+            Glide.with(this)
+                    .load(base_url + file_size + posterPathString)
+                    .placeholder(R.drawable.placeholderimagedetailactivity)
+                    .into(posterPath);
+
+            OriginalTitle.setText(movieTitle);
+            ReleaseDate.setText(dateOfRelease);
+            VoteAverage.setText(userRating);
+            Overview.setText(movieSynopsis);
 
         }else{
             Toast.makeText(this, "Insert your API KEY first from The Movie Db", Toast.LENGTH_SHORT).show();

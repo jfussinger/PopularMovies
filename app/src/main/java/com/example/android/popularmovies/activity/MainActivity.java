@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity
 
     //https://www.androidhive.info/2016/05/android-working-with-retrofit-http-library/
 
+    //https://stackoverflow.com/questions/6957631/sort-java-collection
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu options from the res/menu/menu_catalog.xml file.
         // This adds menu items to the app bar.
+        super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.menu_sort, menu);
         return true;
     }
@@ -95,10 +98,12 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             // Respond to a click on the "sortPopularMovie" menu option
             case R.id.action_sort_popularMovie:
+                Log.i(TAG, "Sort popularMovie selected");
                 sortPopularMovie();
                 return true;
             // Respond to a click on the "sortTopRatedMovie" menu option
             case R.id.action_sort_topRatedMovie:
+                Log.i(TAG, "Sort topRatedMovie selected");
                 sortTopRatedMovie();
                 return true;
         }
@@ -131,7 +136,6 @@ public class MainActivity extends AppCompatActivity
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         //https://guides.codepath.com/android/Fragment-Navigation-Drawer
 
