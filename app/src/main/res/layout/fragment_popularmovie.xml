@@ -11,8 +11,8 @@
         android:id="@+id/gridview_fragmentPopularMovie"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:columnWidth="210dp"
-        android:numColumns="2"
-        android:stretchMode="spacingWidthUniform" />
+        android:stretchMode="columnWidth"
+        android:numColumns="auto_fit"
+        android:columnWidth="150dp" />
 
 </LinearLayout>

@@ -3,6 +3,7 @@
     package="com.example.android.popularmovies">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -33,6 +34,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="activity.MainActivity" />
         </activity>
+        <activity android:name="com.example.android.popularmovies.activity.YouTubeActivity"/>
+        <provider
+            android:name=".data.FavoriteProvider"
+            android:authorities="com.example.android.popularmovies"
+            android:exported="false" />
     </application>
 
 </manifest>

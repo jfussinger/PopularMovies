@@ -1,5 +1,7 @@
 <resources>
 
+    //https://developer.android.com/guide/topics/resources/style-resource
+
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->

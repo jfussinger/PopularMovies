@@ -1,7 +1,5 @@
 package com.example.android.popularmovies.model;
 
-//https://www.androidhive.info/2016/05/android-working-with-retrofit-http-library/
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -9,15 +7,23 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class MovieResponse implements Parcelable {
+public class ReviewResponse implements Parcelable {
+    @SerializedName("id")
+    private int id;
     @SerializedName("page")
     private int page;
     @SerializedName("results")
-    private List<Movie> results;
+    private List<Review> results;
     @SerializedName("total_results")
     private int totalResults;
     @SerializedName("total_pages")
     private int totalPages;
+
+    public int getId() { return id; }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public int getPage() {
         return page;
@@ -27,19 +33,19 @@ public class MovieResponse implements Parcelable {
         this.page = page;
     }
 
-    public List<Movie> getResults() {
+    public List<Review> getResults() {
         return results;
     }
 
-    public List<Movie> getMovies() {
+    public List<Review> getMovies() {
         return results;
     }
 
-    public void setResults(List<Movie> results) {
+    public void setResults(List<Review> results) {
         this.results = results;
     }
 
-    public void setMovies(List<Movie> results) {
+    public void setMovies(List<Review> results) {
         this.results = results;
     }
 
@@ -66,31 +72,33 @@ public class MovieResponse implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.id);
         dest.writeInt(this.page);
         dest.writeTypedList(this.results);
         dest.writeInt(this.totalResults);
         dest.writeInt(this.totalPages);
     }
 
-    public MovieResponse() {
+    public ReviewResponse() {
     }
 
-    public MovieResponse(Parcel in) {
+    protected ReviewResponse(Parcel in) {
+        this.id = in.readInt();
         this.page = in.readInt();
-        this.results = in.createTypedArrayList(Movie.CREATOR);
+        this.results = in.createTypedArrayList(Review.CREATOR);
         this.totalResults = in.readInt();
         this.totalPages = in.readInt();
     }
 
-    public static final Parcelable.Creator<MovieResponse> CREATOR = new Parcelable.Creator<MovieResponse>() {
+    public static final Parcelable.Creator<ReviewResponse> CREATOR = new Parcelable.Creator<ReviewResponse>() {
         @Override
-        public MovieResponse createFromParcel(Parcel source) {
-            return new MovieResponse(source);
+        public ReviewResponse createFromParcel(Parcel source) {
+            return new ReviewResponse(source);
         }
 
         @Override
-        public MovieResponse[] newArray(int size) {
-            return new MovieResponse[size];
+        public ReviewResponse[] newArray(int size) {
+            return new ReviewResponse[size];
         }
     };
 }

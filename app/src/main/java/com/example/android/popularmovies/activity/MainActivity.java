@@ -19,10 +19,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.fragments.FavoriteMovieFragment;
 import com.example.android.popularmovies.fragments.PopularMovieFragment;
 import com.example.android.popularmovies.fragments.TopRatedMovieFragment;
 
@@ -35,12 +35,21 @@ public class MainActivity extends AppCompatActivity
 
     //https://www.androidhive.info/2016/05/android-working-with-retrofit-http-library/
 
-    //https://stackoverflow.com/questions/6957631/sort-java-collection
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //https://stackoverflow.com/questions/22557780/first-fragment-to-be-added-to-the-main-activity-when-application-starts-up
+        //https://github.com/codepath/android-fragment-basics/blob/master/app/src/main/java/com/codepath/mypizza/MainActivity.java
+
+        if(savedInstanceState == null) {
+
+            PopularMovieFragment firstFragment = new PopularMovieFragment();
+
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction().add(R.id.flContent, firstFragment).commit();
+        }
 
         //Toolbar
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -68,48 +77,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu options from the res/menu/menu_catalog.xml file.
-        // This adds menu items to the app bar.
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.menu_sort, menu);
-        return true;
-    }
-
-    private void sortPopularMovie() {
-
-        //TODO add code here to sort PopularMovie
-
-    }
-
-    private void sortTopRatedMovie() {
-
-        //TODO add code here to sort TopRatedMovie
-
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        switch (item.getItemId()) {
-            // Respond to a click on the "sortPopularMovie" menu option
-            case R.id.action_sort_popularMovie:
-                Log.i(TAG, "Sort popularMovie selected");
-                sortPopularMovie();
-                return true;
-            // Respond to a click on the "sortTopRatedMovie" menu option
-            case R.id.action_sort_topRatedMovie:
-                Log.i(TAG, "Sort topRatedMovie selected");
-                sortTopRatedMovie();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     @SuppressWarnings("StatementWithEmptyBody")
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -126,6 +93,11 @@ public class MainActivity extends AppCompatActivity
                 Log.i(TAG, "topRatedMovie selected");
                 fragmentClass = TopRatedMovieFragment.class;
                 setTitle(R.string.nav_topRatedMovie);
+                break;
+            case R.id.nav_favoriteMovie:
+                Log.i(TAG, "favoriteMovie selected");
+                fragmentClass = FavoriteMovieFragment.class;
+                setTitle(R.string.nav_favoriteMovie);
                 break;
             default:
                 fragmentClass = PopularMovieFragment.class;

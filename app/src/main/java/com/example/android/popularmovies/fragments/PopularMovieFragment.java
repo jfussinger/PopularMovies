@@ -1,6 +1,8 @@
 package com.example.android.popularmovies.fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.example.android.popularmovies.BuildConfig;
 import com.example.android.popularmovies.R;
 import com.example.android.popularmovies.activity.DetailActivity;
 import com.example.android.popularmovies.adapter.MainAdapter;
@@ -38,15 +41,16 @@ public class PopularMovieFragment extends Fragment {
     private GridView popularmoviesGridview;
 
     private ArrayList<Movie> movieList = new ArrayList<Movie>();
-    //private ArrayList<Movie> moviesPopular = new ArrayList<Movie>();
 
     private MainAdapter moviesPopularAdapter;
+
+    String apiKey = BuildConfig.MOVIE_DB_API_KEY;
 
     public void onLoadMovies() {
 
         //https://stackoverflow.com/questions/10770055/use-toast-inside-fragment
 
-        if (getString(R.string.apiKey).isEmpty()) {
+        if (apiKey.isEmpty()) {
             Toast.makeText(getActivity(), "Insert your API KEY first from The Movie Db", Toast.LENGTH_LONG).show();
         }
 
@@ -55,7 +59,7 @@ public class PopularMovieFragment extends Fragment {
 
         APIService apiService = Retrofit2.retrofit.create(APIService.class);
 
-        Call<MovieResponse> callPopularMovie = apiService.getPopularMovie(getString(R.string.apiKey));
+        Call<MovieResponse> callPopularMovie = apiService.getPopularMovie(apiKey);
         callPopularMovie.enqueue(new Callback<MovieResponse>() {
 
             //https://stackoverflow.com/questions/35254843/gridview-setadapter-method-gives-nullpointerexception
@@ -86,7 +90,6 @@ public class PopularMovieFragment extends Fragment {
             }
 
         });
-
     }
 
     //https://github.com/udacity/android-custom-arrayadapter/blob/parcelable/app/src/main/java/demo/example/com/customarrayadapter/MainActivityFragment.java
@@ -96,18 +99,15 @@ public class PopularMovieFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        if(savedInstanceState == null || !savedInstanceState.containsKey("movie")) {
-            movieList = new ArrayList<Movie>();
-        }
-        else {
+        if(savedInstanceState != null) {
             movieList = savedInstanceState.getParcelableArrayList("movie");
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList("movie", movieList);
         super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("movie", movieList);
     }
 
     @Override
@@ -117,17 +117,27 @@ public class PopularMovieFragment extends Fragment {
 
         moviesPopularAdapter = new MainAdapter(getActivity(), movieList);
 
-        onLoadMovies();
-
         //https://stackoverflow.com/questions/21339086/gridview-and-navigation-drawer-not-working-together-in-android
         //https://stackoverflow.com/questions/22890314/gridview-is-not-shown-in-an-example-with-navigation-drawer
 
         popularmoviesGridview = (GridView) view.findViewById(R.id.gridview_fragmentPopularMovie);
         popularmoviesGridview.setAdapter(new MainAdapter(getActivity(), movieList));
 
+        //https://stackoverflow.com/questions/8619794/maintain-scroll-position-of-gridview-through-screen-rotation
+
+        if (!isNetworkAvailable(getContext())) {
+            Toast.makeText(getContext(), "Your device is not online, " +
+                            "check wifi and try again!",
+                    Toast.LENGTH_LONG).show();
+        } else {
+
+            onLoadMovies();
+
+        }
+
         //https://stackoverflow.com/questions/27180933/gridview-with-gridviewadapter-how-to-set-onclick-listener-in-gridview-and-not-gr
 
-        //TODO add Fragment intent to DetailActivity
+        //Fragment intent to DetailActivity
         //https://discussions.udacity.com/t/how-do-i-use-intent-to-get-and-display-movie-details/27778/5
 
         popularmoviesGridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -145,11 +155,15 @@ public class PopularMovieFragment extends Fragment {
 
     }
 
-    //https://github.com/codepath/android-networking-persistence-sample-moviedb/blob/master/app/src/main/java/com/shrikant/themoviedb/fragments/TopRatedMoviesFragment.java
-
     @Override
     public void onResume() {
         super.onResume();
     }
 
+    //https://stackoverflow.com/questions/9570237/android-check-internet-connection
+
+    public boolean isNetworkAvailable(final Context context) {
+        final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+        return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
+    }
 }

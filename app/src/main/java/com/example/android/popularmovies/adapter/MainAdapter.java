@@ -1,6 +1,7 @@
 package com.example.android.popularmovies.adapter;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +10,11 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.example.android.popularmovies.R;
+import com.example.android.popularmovies.data.FavoriteContract;
 import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.model.MovieResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainAdapter extends ArrayAdapter<Movie> {
@@ -23,6 +27,7 @@ public class MainAdapter extends ArrayAdapter<Movie> {
     public MainAdapter(Context context, List<Movie> movieList) {
 
         super(context, 0, movieList);
+
     }
     @Override
     public View getView(final int position, View convertView, final ViewGroup parent) {
@@ -44,7 +49,7 @@ public class MainAdapter extends ArrayAdapter<Movie> {
             viewHolder = (MainAdapter.ViewHolder) convertView.getTag();
         }
 
-        // TODO Build poster_path URL
+        // Poster_path URL
         // https://developers.themoviedb.org/3/getting-started/images
         //
         // 1. The base URL will look like: http://image.tmdb.org/t/p/
