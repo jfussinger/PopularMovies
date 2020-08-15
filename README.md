@@ -43,4 +43,6 @@ Why this Project?
 
 To become an Android developer, you must know how to bring particular mobile experiences to life. Specifically, you need to know how to build clean and compelling user interfaces (UIs), fetch data from network services, and optimize the experience for various mobile devices. You will hone these fundamental skills in this project.
 
+![](filename%20Popular%20Movies.png
+
 
