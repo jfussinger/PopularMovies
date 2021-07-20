@@ -44,9 +44,7 @@ You'll create a database using Room to store the names and ids of the user's fav
 You’ll modify the existing sorting criteria for the main view to include an additional pivot to show their favorites collection.
 
 
-![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/Top%20Rated%20Movies.png)
-
-![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/Popular%20Movies.png)
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/PopularMovies.png)
 
 ![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/Detail%20Screen.png)
 
