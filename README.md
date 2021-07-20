@@ -54,11 +54,11 @@ You’ll modify the existing sorting criteria for the main view to include an ad
 
 ![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/TopRatedMovies.png)
 
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/NowPlayingMovies.png)
+
 ![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/UpcomingMovies.png)
 
 ![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/SearchMovies.png)
-
-![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/NowPlayingMovies.png)
 
 ![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/FavoriteMovies.png)
 
