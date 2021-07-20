@@ -1,157 +1,183 @@
 package com.example.android.popularmovies.fragments;
 
-import android.net.Uri;
-import android.database.Cursor;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import android.os.Parcelable;
-import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.GridView;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
+import android.widget.Toast;
+
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.android.popularmovies.R;
-import com.example.android.popularmovies.adapter.FavoriteAdapter;
-import com.example.android.popularmovies.data.FavoriteContract;
-import com.example.android.popularmovies.data.FavoriteDbHelper;
+import com.example.android.popularmovies.adapter.MainAdapter;
+import com.example.android.popularmovies.model.Favorite;
 import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.roomdatabase.viewmodel.MoviesViewModel;
 
 import java.util.ArrayList;
+import java.util.List;
 
 //https://github.com/udacity/Sunshine-Version-2/blob/sunshine_master/app/src/main/java/com/example/android/sunshine/app/DetailFragment.java
 //https://gist.github.com/AntonioDiaz/c48399619719fccfee982774f66a8650
 //https://stackoverflow.com/questions/41267446/how-to-get-loadermanager-initloader-working-within-a-fragment
 //https://stackoverflow.com/questions/44905046/how-to-store-data-fetch-from-retrofit-to-sqlite-database
 
-public class FavoriteMovieFragment extends Fragment
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+public class FavoriteMovieFragment extends Fragment {
+
+    //Params for saving data
+
+    public static final String PARAM_LIST_STATE = "param-state";
+    private static final String TAG = "savedfragment";
+
+    private RecyclerView recyclerView;
+    private ArrayList<Movie> movies = new ArrayList<Movie>();
+    private MainAdapter mAdapter;
+    private MoviesViewModel moviesViewModel;
+    private boolean showSaved = false;
+    private Parcelable listState;
 
     public FavoriteMovieFragment() {
+        // Required empty public constructor
     }
 
-    private static final String TAG = "favoritemoviefragment";
+    public static FavoriteMovieFragment newInstance() {
+        return new FavoriteMovieFragment();
+    }
 
-    private GridView favoritemoviesGridview;
+    public void onLoadViewModel() {
 
-    private ArrayList<Movie> movieList = new ArrayList<Movie>();
+        moviesViewModel = ViewModelProviders.of(this).get(MoviesViewModel.class);
+        if (showSaved) {
+            moviesViewModel.getAllSaved().observe(getViewLifecycleOwner(), new Observer<List<Movie>>() {
+                @Override
+                public void onChanged(@Nullable List<Movie> movies) {
+                    if (movies != null) {
+                        mAdapter.setMovies(movies);
+                        mAdapter.notifyDataSetChanged();
+                        recyclerView.setAdapter(new MainAdapter(movies, R.layout.activity_main_list_item, getActivity()));
 
-    private Movie favoriteMovies;
+                        restoreRecyclerViewState();
 
-    private FavoriteAdapter favoriteAdapter;
+                        Log.d(TAG, "FavoritesFragment - ViewModel");
+                        Log.d(TAG, "Number of movies received: " + movies.size());
+                        Log.d(TAG, "FavoriteMovies: " + movies);
 
-    public static final String CONTENT_URI = "URI";
+                    } else {
+                        //mAdapter.notifyDataSetChanged();
+                        restoreRecyclerViewState();
+                    }
 
-    private Uri mUri;
+                    if (movies.size() > 0) {
+                        Log.d(TAG, "FavoritesFragment");
+                        Log.d(TAG, "Number of movies received : " + movies.size());
+                        //Log.d(TAG, "Key: " + movies.get(0).getMovieKey());
+                        Log.d(TAG, "Id :" + movies.get(0).getId());
+                        Log.d(TAG, "PosterPath :" + movies.get(0).getPosterPath());
+                        Log.d(TAG, "Title :" + movies.get(0).getTitle());
+                        Log.d(TAG, "Release Date :" + movies.get(0).getReleaseDate());
+                        Log.d(TAG, "Average Rating :" + movies.get(0).getVoteAverage());
+                        Log.d(TAG, "Overview :" + movies.get(0).getOverview());
+                        Log.d(TAG, "SaveDate :" + movies.get(0).getSaveDate());
+                    } else {
+                        Toast.makeText(getContext(), "No favorites found", Toast.LENGTH_SHORT).show();
+                        //mySwipeRefreshLayout.setRefreshing(false);
+                    }
 
-    private static final int FAVORITE_LOADER = 0;
-
-    private FavoriteDbHelper favoriteDbHelper;
-
-    int movie_id;
-
-    //https://github.com/udacity/Sunshine-Version-2/blob/sunshine_master/app/src/main/java/com/example/android/sunshine/app/DetailFragment.java
-
-    public static final String[] FAVORITE_DETAIL_PROJECTION = {
-            FavoriteContract.FavoriteEntry._ID,
-            FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_MOVIEID,
-            FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_ORIGINALTITLE,
-            FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_POSTERPATH,
-            FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_RELEASEDATE,
-            FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_VOTEAVERAGE,
-            FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_OVERVIEW
-    };
-
-    /*
-     * The columns of data that we are interested in displaying within our DetailActivity's
-     * FavoriteMovie display.
-     */
+                }
+            });
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+
+        showSaved = true;
+
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_favoritemovie, container, false);
+
+        //https://stackoverflow.com/questions/28570842/setlayoutmanager-nullpointexception-in-recyclerview
 
         if(savedInstanceState != null) {
-            movieList = savedInstanceState.getParcelableArrayList("movie");
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList("movie", movieList);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            mUri = arguments.getParcelable(FavoriteMovieFragment.CONTENT_URI);
+            Log.v(TAG, "RecyclerView not found!");
+            //movies = savedInstanceState.getParcelableArrayList("movie");
         }
 
-        //https://github.com/udacity/Sunshine-Version-2/blob/sunshine_master/app/src/main/java/com/example/android/sunshine/app/DetailFragment.java
+        mAdapter = new MainAdapter(movies, R.layout.activity_main_list_item, getActivity());
 
-        final View view = inflater.inflate(R.layout.fragment_favoritemovie, container, false);
-        favoritemoviesGridview = (GridView) view.findViewById(R.id.gridview_fragmentFavoriteMovie);
+        recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
 
-        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
-        View emptyView = view.findViewById(R.id.empty_view);
-        favoritemoviesGridview.setEmptyView(emptyView);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(),3);
+        recyclerView.setLayoutManager(gridLayoutManager); // set LayoutManager to RecyclerView
 
-        // Find the ListView which will be populated with the favorite data
+        recyclerView.setAdapter(new MainAdapter(movies, R.layout.activity_main_list_item, getActivity()));
 
-        favoriteAdapter = new FavoriteAdapter(getContext(), null, movieList);
-        favoritemoviesGridview.setAdapter(favoriteAdapter);
+        onLoadViewModel();
 
-        //https://stackoverflow.com/questions/8619794/maintain-scroll-position-of-gridview-through-screen-rotation
-
-        // Kick off the loader
-        getLoaderManager().initLoader(FAVORITE_LOADER, null, this);
+        setRetainInstance(true);
 
         // Inflate the layout for this fragment
         return view;
 
     }
 
-    //https://stackoverflow.com/questions/23154037/accessing-sqlite-database-from-fragment
-    //https://github.com/udacity/ud851-Sunshine/blob/student/S12.04-Solution-ResourceQualifiers/app/src/main/java/com/example/android/sunshine/DetailActivity.java
-
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(FAVORITE_LOADER, null, this);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            listState = savedInstanceState.getParcelable(PARAM_LIST_STATE);
+        }
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+    public void onSaveInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
 
-        // This loader will execute the ContentProvider's query method on a background thread
-        return new CursorLoader(getActivity(),   // Parent activity context
-                FavoriteContract.FavoriteEntry.CONTENT_URI,   // Provider content URI to query
-                FAVORITE_DETAIL_PROJECTION,             // Columns to include in the resulting Cursor
-                null,                   // No selection clause
-                null,                   // No selection arguments
-                null);                  // Default sort order
+        savedInstanceState.putParcelable(PARAM_LIST_STATE, listState);
+        //savedInstanceState.putParcelableArrayList("movie", movies);
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
 
-        favoriteAdapter.swapCursor(data);
-
+        if (savedInstanceState != null) {
+            //movies = savedInstanceState.getParcelableArrayList("movie");
+            savedInstanceState.getParcelable(PARAM_LIST_STATE);
+        }
     }
 
+    private void restoreRecyclerViewState() {
+        if (recyclerView.getLayoutManager() != null) {
+            recyclerView.getLayoutManager().onRestoreInstanceState(listState);
+        }
+    }
+
+    //https://stackoverflow.com/questions/13472258/handling-actionbar-title-with-the-fragment-back-stack
+
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        // Callback called when the data needs to be deleted
-        favoriteAdapter.swapCursor(null);
+    public void onResume() {
+        super.onResume();
+
+        getActivity().setTitle(R.string.nav_favoriteMovie);
 
     }
 
 }
-

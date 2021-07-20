@@ -8,6 +8,8 @@ package com.example.android.popularmovies.apiservice;
 
 //JSON Formatter & Validator http://api.themoviedb.org/3/movie/popular?api_key=[YOUR_API_KEY]
 //JSON Formatter & Validator http://api.themoviedb.org/3/movie/top_rated?api_key=[YOUR_API_KEY]
+//JSON Formatter & Validator http://api.themoviedb.org/3/movie/upcoming?api_key=[YOUR_API_KEY]
+//JSON Formatter & Validator http://api.themoviedb.org/3/movie/now_playing?api_key=[YOUR_API_KEY]
 //JSON Formatter & Validator http://api.themoviedb.org/3/movie/{id}/videos?api_key=[YOUR_API_KEY]
 //JSON Formatter & Validator http://api.themoviedb.org/3/movie/{id}/reviews?api_key=[YOUR_API_KEY]
 
@@ -25,11 +27,22 @@ public interface APIService {
 
     String apiKey = BuildConfig.MOVIE_DB_API_KEY;
 
+    @GET("search/movie")
+    Call<MovieResponse> getSearch(@Query("api_key") String apiKey,
+                                   @Query("query") String keyword);
+
     @GET("movie/popular")
-    Call<MovieResponse> getPopularMovie(@Query("api_key") String apiKey);
+    Call<MovieResponse> getPopularMovie(@Query("api_key") String apiKey, @Query("page") int pageIndex);
+    //Call<MovieResponse> getPopularMovie(@Query("api_key") String apiKey, @Query("page") int page);
 
     @GET("movie/top_rated")
-    Call<MovieResponse> getTopRatedMovie(@Query("api_key") String apiKey);
+    Call<MovieResponse> getTopRatedMovie(@Query("api_key") String apiKey, @Query("page") int pageIndex);
+
+    @GET("movie/now_playing")
+    Call<MovieResponse> getNowPlayingMovie(@Query("api_key") String apiKey, @Query("page") int pageIndex);
+
+    @GET("movie/upcoming")
+    Call<MovieResponse> getUpcomingMovie(@Query("api_key") String apiKey, @Query("page") int pageIndex);
 
     //https://www.androidhive.info/2016/05/android-working-with-retrofit-http-library/
 
@@ -40,6 +53,10 @@ public interface APIService {
     Call<ReviewResponse> getReviews(@Path("id") int id, @Query("api_key") String apiKey);
 
 }
+
+//search/movie
+
+//https://api.themoviedb.org/3/search/movie?api_key={api_key}&query=Jack+Reacher
 
 //Videos example API
 //John Wick

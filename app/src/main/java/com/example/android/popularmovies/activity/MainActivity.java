@@ -9,15 +9,20 @@ package com.example.android.popularmovies.activity;
 //https://www.androidhive.info/2015/04/android-getting-started-with-material-design/
 //https://www.androidhive.info/2013/11/android-sliding-menu-using-navigation-drawer/
 
-import android.support.design.widget.NavigationView;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v4.app.Fragment;
+//https://www.simplifiedcoding.net/android-navigation-drawer-example-using-fragments/
+
+import com.example.android.popularmovies.fragments.NowPlayingMovieFragment;
+import com.example.android.popularmovies.fragments.SearchFragment;
+import com.example.android.popularmovies.fragments.UpcomingMovieFragment;
+import com.google.android.material.navigation.NavigationView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
+import androidx.fragment.app.FragmentManager;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -33,6 +38,8 @@ public class MainActivity extends AppCompatActivity
 
     private Toolbar mToolbar;
 
+    private ActionBarDrawerToggle toggle;
+
     //https://www.androidhive.info/2016/05/android-working-with-retrofit-http-library/
 
     @Override
@@ -42,13 +49,14 @@ public class MainActivity extends AppCompatActivity
 
         //https://stackoverflow.com/questions/22557780/first-fragment-to-be-added-to-the-main-activity-when-application-starts-up
         //https://github.com/codepath/android-fragment-basics/blob/master/app/src/main/java/com/codepath/mypizza/MainActivity.java
+        //https://stackoverflow.com/questions/13305861/fool-proof-way-to-handle-fragment-on-orientation-change
 
         if(savedInstanceState == null) {
 
             PopularMovieFragment firstFragment = new PopularMovieFragment();
 
             FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction().add(R.id.flContent, firstFragment).commit();
+            fragmentManager.beginTransaction().replace(R.id.flContent, firstFragment).commit();
         }
 
         //Toolbar
@@ -56,7 +64,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(mToolbar);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        toggle = new ActionBarDrawerToggle(
                 this, drawer, mToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
@@ -66,6 +74,11 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
     }
+
+    //https://stackoverflow.com/questions/37043812/navigation-drawer-changes-in-rotation
+    //https://guides.codepath.com/android/Handling-Configuration-Changes#saving-and-restoring-fragment-state
+    //https://guides.codepath.com/android/fragment-navigation-drawer
+
 
     @Override
     public void onBackPressed() {
@@ -84,6 +97,11 @@ public class MainActivity extends AppCompatActivity
         Class fragmentClass;
 
         switch (item.getItemId()) {
+            case R.id.nav_search:
+                Log.i(TAG, "search selected");
+                fragmentClass = SearchFragment.class;
+                setTitle(R.string.nav_search);
+                break;
             case R.id.nav_popularMovie:
                 Log.i(TAG, "popularMovie selected");
                 fragmentClass = PopularMovieFragment.class;
@@ -93,6 +111,16 @@ public class MainActivity extends AppCompatActivity
                 Log.i(TAG, "topRatedMovie selected");
                 fragmentClass = TopRatedMovieFragment.class;
                 setTitle(R.string.nav_topRatedMovie);
+                break;
+            case R.id.nav_nowPlayingMovie:
+                Log.i(TAG, "nowPlayingMovie selected");
+                fragmentClass = NowPlayingMovieFragment.class;
+                setTitle(R.string.nav_nowPlayingMovie);
+                break;
+            case R.id.nav_upcomingMovie:
+                Log.i(TAG, "upcomingMovie selected");
+                fragmentClass = UpcomingMovieFragment.class;
+                setTitle(R.string.nav_upcomingMovie);
                 break;
             case R.id.nav_favoriteMovie:
                 Log.i(TAG, "favoriteMovie selected");
@@ -112,8 +140,10 @@ public class MainActivity extends AppCompatActivity
         //https://guides.codepath.com/android/Fragment-Navigation-Drawer
 
         // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
+        if (fragment != null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
+        }
 
         // Highlight the selected item has been done by NavigationView
         item.setChecked(true);

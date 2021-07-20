@@ -1,26 +1,27 @@
 package com.example.android.popularmovies.fragments;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.support.v4.app.Fragment;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.Toast;
 
 import com.example.android.popularmovies.BuildConfig;
 import com.example.android.popularmovies.R;
-import com.example.android.popularmovies.activity.DetailActivity;
+import com.example.android.popularmovies.activity.PaginationScrollListener;
 import com.example.android.popularmovies.adapter.MainAdapter;
-import com.example.android.popularmovies.model.Movie;
-import com.example.android.popularmovies.model.MovieResponse;
 import com.example.android.popularmovies.apiservice.APIService;
 import com.example.android.popularmovies.apiservice.Retrofit2;
+import com.example.android.popularmovies.model.Movie;
+import com.example.android.popularmovies.model.MovieResponse;
 
 import java.util.ArrayList;
 
@@ -36,17 +37,132 @@ public class TopRatedMovieFragment extends Fragment {
         // Required empty public constructor
     }
 
-    private static final String TAG = "topratedmoviefragment";
+    private static final String TAG = "topratedgmoviefragment";
 
-    private GridView topratedmoviesGridview;
+    private ArrayList<Movie> movies = new ArrayList<Movie>();
 
-    private ArrayList<Movie> movieList = new ArrayList<Movie>();
-
-    private MainAdapter moviesTopRatedAdapter;
+    private MainAdapter mAdapter;
 
     String apiKey = BuildConfig.MOVIE_DB_API_KEY;
 
-    public void onLoadMovies() {
+    private static final int PAGE_START = 1;
+
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
+
+    private static final int TOTAL_PAGES = 1000;
+    private int currentPage = PAGE_START;
+
+    private APIService apiService;
+
+    GridLayoutManager gridLayoutManager;
+    private RecyclerView recyclerView;
+
+    private int position;
+
+    private SwipeRefreshLayout mySwipeRefreshLayout;
+    private Parcelable savedMoviesRecyclerLayoutState;
+    private static final String BUNDLE_MOVIES_RECYCLER_VIEW = "bundleMoviesRecyclerView";
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
+        if(savedInstanceState != null) {
+            movies = savedInstanceState.getParcelableArrayList("movie");
+            savedMoviesRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_MOVIES_RECYCLER_VIEW);
+            recyclerView.getLayoutManager().onRestoreInstanceState(savedMoviesRecyclerLayoutState);
+            currentPage = savedInstanceState.getInt("currentPage");
+            Log.d(TAG, "OnCreate onSaveInstanceState: Loading page: " + currentPage);
+        }
+
+        setRetainInstance(true);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_topratedmovie, container, false);
+
+        mySwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
+
+        mAdapter = new MainAdapter(movies, R.layout.activity_main_list_item, getActivity());
+
+        //https://stackoverflow.com/questions/21339086/gridview-and-navigation-drawer-not-working-together-in-android
+        //https://stackoverflow.com/questions/22890314/gridview-is-not-shown-in-an-example-with-navigation-drawer
+
+        recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+        recyclerView.setAdapter(new MainAdapter(movies, R.layout.activity_main_list_item, getActivity()));
+
+        gridLayoutManager = new GridLayoutManager(getActivity(),3);
+        recyclerView.setLayoutManager(gridLayoutManager); // set LayoutManager to RecyclerView
+
+        recyclerView.addOnScrollListener(new PaginationScrollListener(gridLayoutManager) {
+            @Override
+            protected void loadMoreItems() {
+                isLoading = true;
+                currentPage += 1;
+
+                onLoadNextPage();
+            }
+
+            @Override
+            public int getTotalPageCount() {
+                return TOTAL_PAGES;
+            }
+
+            @Override
+            public boolean isLastPage() {
+                return isLastPage;
+            }
+
+            @Override
+            public boolean isLoading() {
+                return isLoading;
+            }
+        });
+
+        apiService = Retrofit2.retrofit.create(APIService.class);
+
+        if(savedInstanceState != null) {
+            Log.v(TAG, "RecyclerView not found!");
+            movies = savedInstanceState.getParcelableArrayList("movie");
+            savedMoviesRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_MOVIES_RECYCLER_VIEW);
+            recyclerView.getLayoutManager().onRestoreInstanceState(savedMoviesRecyclerLayoutState);
+            currentPage = savedInstanceState.getInt("currentPage");
+            Log.d(TAG, "onCreateView onSaveInstanceState: Loading page: " + currentPage);
+        } else {
+            onLoadFirstPage();
+        }
+
+        mySwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                onLoadingSwipeRefresh();
+                //mySwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        setRetainInstance(true);
+
+        // Inflate the layout for this fragment
+        return view;
+
+    }
+
+    private void onLoadingSwipeRefresh() {
+
+        mAdapter.getMovies().clear();
+        mAdapter.notifyDataSetChanged();
+        onLoadFirstPage();
+        //isLoading = true;
+        mySwipeRefreshLayout.setRefreshing(false);
+    }
+
+    public void onLoadFirstPage() {
+
+        currentPage = PAGE_START;
 
         //https://stackoverflow.com/questions/10770055/use-toast-inside-fragment
 
@@ -57,10 +173,10 @@ public class TopRatedMovieFragment extends Fragment {
         //https://stackoverflow.com/questions/39378586/how-to-create-multiple-retrofit-callbacks-in-same-fragment-android
         //https://github.com/codepath/android_guides/wiki/Consuming-APIs-with-Retrofit
 
-        APIService apiService = Retrofit2.retrofit.create(APIService.class);
+        //APIService apiService = Retrofit2.retrofit.create(APIService.class);
 
-        Call<MovieResponse> callTopRatedMovie = apiService.getTopRatedMovie(apiKey);
-        callTopRatedMovie.enqueue(new Callback<MovieResponse>() {
+        //Call<MovieResponse> callTopRatedMovie = apiService.getTopRatedMovie(apiKey, currentPage);
+        callTopRatedMovie().enqueue(new Callback<MovieResponse>() {
 
             //https://stackoverflow.com/questions/35254843/gridview-setadapter-method-gives-nullpointerexception
 
@@ -68,19 +184,36 @@ public class TopRatedMovieFragment extends Fragment {
             public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
                 MovieResponse topRatedMovieResponse = response.body();
                 if (topRatedMovieResponse != null) {
-                    movieList = (ArrayList<Movie>) topRatedMovieResponse.getResults();
-                    //moviesTopRatedAdapter.clear();// no need for this line in the first call
-                    moviesTopRatedAdapter.addAll(movieList);
-                    moviesTopRatedAdapter.notifyDataSetChanged();
-                    topratedmoviesGridview.setAdapter(new MainAdapter(getActivity(), movieList));
+                    movies = (ArrayList<Movie>) topRatedMovieResponse.getResults();
+                    mAdapter.addAll(movies);
+                    mAdapter.setMovies(movies);
+                    //mAdapter.notifyDataSetChanged();
+                    recyclerView.setAdapter(new MainAdapter(movies, R.layout.activity_main_list_item, getActivity()));
+
+                    if (currentPage <= TOTAL_PAGES) mAdapter.addLoadingFooter();
+                    else isLastPage = true;
+
+                    Log.d(TAG, "TopRatedMoviesFragment");
+                    Log.d(TAG, "Number of movies received: " + movies.size());
+                    Log.d(TAG, "TopRatedMovies: " + movies);
                 }
-                Log.d(TAG, "Number of movies received: " + movieList.size());
-                Log.d(TAG, "PosterPath:" + movieList.get(0).getPosterPath());
-                Log.d(TAG, "Title:" + movieList.get(0).getTitle());
-                Log.d(TAG, "Release Date:" + movieList.get(0).getReleaseDate());
-                Log.d(TAG, "Average Rating:" + movieList.get(0).getVoteAverage());
-                Log.d(TAG, "Overview:" + movieList.get(0).getOverview());
-                Log.d(TAG, "Popularity:" + movieList.get(0).getPopularity());
+                if (movies.size()>0) {
+                    Log.d(TAG, "TopRatedMoviesFragment - First Page");
+                    Log.d(TAG, "Loading page: " + currentPage);
+                    Log.d(TAG, "Number of movies received: " + movies.size());
+                    Log.d(TAG, "Id: " + movies.get(0).getId());
+                    Log.d(TAG, "PosterPath: " + movies.get(0).getPosterPath());
+                    Log.d(TAG, "Title: " + movies.get(0).getTitle());
+                    Log.d(TAG, "Release Date: " + movies.get(0).getReleaseDate());
+                    Log.d(TAG, "Average Rating: " + movies.get(0).getVoteAverage());
+                    Log.d(TAG, "Overview: " + movies.get(0).getOverview());
+                    Log.d(TAG, "Popularity: " + movies.get(0).getPopularity());
+                    Log.d(TAG, "SaveDate: " + movies.get(0).getSaveDate());
+                }
+                else {
+                    Toast.makeText(getActivity(), "No movies found", Toast.LENGTH_SHORT).show();
+                    //mySwipeRefreshLayout.setRefreshing(false);
+                }
             }
 
             @Override
@@ -92,78 +225,121 @@ public class TopRatedMovieFragment extends Fragment {
         });
     }
 
-    //https://github.com/udacity/android-custom-arrayadapter/blob/parcelable/app/src/main/java/demo/example/com/customarrayadapter/MainActivityFragment.java
+    public void onLoadNextPage() {
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+        //https://stackoverflow.com/questions/10770055/use-toast-inside-fragment
 
-        if(savedInstanceState != null) {
-            movieList = savedInstanceState.getParcelableArrayList("movie");
+        if (apiKey.isEmpty()) {
+            Toast.makeText(getActivity(), "Insert your API KEY first from The Movie Db", Toast.LENGTH_LONG).show();
         }
+
+        //https://stackoverflow.com/questions/39378586/how-to-create-multiple-retrofit-callbacks-in-same-fragment-android
+        //https://github.com/codepath/android_guides/wiki/Consuming-APIs-with-Retrofit
+
+        //APIService apiService = Retrofit2.retrofit.create(APIService.class);
+
+        //Call<MovieResponse> callTopRatedMovie = apiService.getTopRatedMovie(apiKey, currentPage);
+        callTopRatedMovie().enqueue(new Callback<MovieResponse>() {
+
+            //https://stackoverflow.com/questions/35254843/gridview-setadapter-method-gives-nullpointerexception
+
+            @Override
+            public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
+                MovieResponse topRatedMovieResponse = response.body();
+                if (topRatedMovieResponse != null) {
+                    mAdapter.removeLoadingFooter();
+                    isLoading = false;
+
+                    movies = (ArrayList<Movie>) topRatedMovieResponse.getResults();
+                    mAdapter.addAll(movies);
+                    mAdapter.setMovies(movies);
+                    //mAdapter.notifyDataSetChanged();
+                    recyclerView.setAdapter(new MainAdapter(movies, R.layout.activity_main_list_item, getActivity()));
+
+                    if (currentPage != TOTAL_PAGES) mAdapter.addLoadingFooter();
+                    else isLastPage = true;
+
+                    Log.d(TAG, "TopRatedMoviesFragment");
+                    Log.d(TAG, "Number of movies received: " + movies.size());
+                    Log.d(TAG, "TopRated: " + movies);
+                }
+                if (movies.size()>0) {
+                    Log.d(TAG, "TopRatedMoviesFragment - Next Page");
+                    Log.d(TAG, "Loading page: " + currentPage);
+                    Log.d(TAG, "Number of movies received: " + movies.size());
+                    Log.d(TAG, "Id: " + movies.get(0).getId());
+                    Log.d(TAG, "PosterPath: " + movies.get(0).getPosterPath());
+                    Log.d(TAG, "Title: " + movies.get(0).getTitle());
+                    Log.d(TAG, "Release Date: " + movies.get(0).getReleaseDate());
+                    Log.d(TAG, "Average Rating: " + movies.get(0).getVoteAverage());
+                    Log.d(TAG, "Overview: " + movies.get(0).getOverview());
+                    Log.d(TAG, "Popularity: " + movies.get(0).getPopularity());
+                    Log.d(TAG, "SaveDate: " + movies.get(0).getSaveDate());
+                }
+                else {
+                    Toast.makeText(getActivity(), "No movies found", Toast.LENGTH_SHORT).show();
+                    //mySwipeRefreshLayout.setRefreshing(false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MovieResponse> call, Throwable t) {
+                // Log error here since request failed
+                Log.e(TAG, t.toString());
+            }
+
+        });
     }
+
+    private Call<MovieResponse> callTopRatedMovie() {
+        return apiService.getTopRatedMovie(
+                apiKey,
+                currentPage
+        );
+    }
+
+    //@Override
+    public void retryPageLoad() {
+        onLoadNextPage();
+    }
+
+    //https://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview#5688490
+    //https://stackoverflow.com/questions/8619794/maintain-scroll-position-of-gridview-through-screen-rotation
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList("movie", movieList);
+        outState.putParcelableArrayList("movie", movies);
+        outState.putInt("position", position);
+        outState.putParcelable(BUNDLE_MOVIES_RECYCLER_VIEW, recyclerView.getLayoutManager().onSaveInstanceState());
+        outState.putInt("currentPage", currentPage);
+        Log.d(TAG, "onSaveInstanceState: Loading page: " + currentPage);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_topratedmovie, container, false);
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
 
-        moviesTopRatedAdapter = new MainAdapter(getActivity(), movieList);
-
-        //https://stackoverflow.com/questions/21339086/gridview-and-navigation-drawer-not-working-together-in-android
-        //https://stackoverflow.com/questions/22890314/gridview-is-not-shown-in-an-example-with-navigation-drawer
-
-        topratedmoviesGridview = (GridView) view.findViewById(R.id.gridview_fragmentTopRatedMovie);
-        topratedmoviesGridview.setAdapter(new MainAdapter(getActivity(), movieList));
-
-        //https://stackoverflow.com/questions/8619794/maintain-scroll-position-of-gridview-through-screen-rotation
-
-        if (!isNetworkAvailable(getContext())) {
-            Toast.makeText(getContext(), "Your device is not online, " +
-                            "check wifi and try again!",
-                    Toast.LENGTH_LONG).show();
-        } else {
-
-            onLoadMovies();
-
+        if (savedInstanceState != null) {
+            movies = savedInstanceState.getParcelableArrayList("movie");
+            position = savedInstanceState.getInt("position");
+            savedMoviesRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_MOVIES_RECYCLER_VIEW);
+            currentPage = savedInstanceState.getInt("currentPage");
+            Log.d(TAG, "onViewStateRestored: Loading page: " + currentPage);
         }
+    }
 
-        //https://stackoverflow.com/questions/27180933/gridview-with-gridviewadapter-how-to-set-onclick-listener-in-gridview-and-not-gr
-
-        //Fragment intent to DetailActivity
-        //https://discussions.udacity.com/t/how-do-i-use-intent-to-get-and-display-movie-details/27778/5
-
-        topratedmoviesGridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View v,
-                                    int position, long id) {
-                Movie Movies = moviesTopRatedAdapter.getItem(position);
-                Intent intent = new Intent(getContext(), DetailActivity.class);
-                intent.putExtra("movie", Movies);
-                startActivity(intent);
-            }
-        });
-
-        // Inflate the layout for this fragment
-        return view;
-
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState)
+    {
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        getActivity().setTitle(R.string.nav_topRatedMovie);
     }
 
-    //https://stackoverflow.com/questions/9570237/android-check-internet-connection
-
-    public boolean isNetworkAvailable(Context context) {
-        final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
-        return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
-    }
 }

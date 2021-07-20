@@ -4,7 +4,7 @@ package com.example.android.popularmovies.adapter;
 //https://www.codeproject.com/Articles/1214971/Youtube-channel-integration-in-Android-using
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,6 +68,8 @@ public class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHol
         holder.iso_3166_1.setText(videos.get(position).getIso_3166_1());
         holder.iso_639_1.setText(videos.get(position).getIso_639_1());
         holder.key.setText(videos.get(position).getKey());
+
+        //https://stackoverflow.com/questions/2068344/how-do-i-get-a-youtube-video-thumbnail-from-the-youtube-api
 
         final String base_url = "http://img.youtube.com/vi/";
         final String key = videos.get(position).getKey();

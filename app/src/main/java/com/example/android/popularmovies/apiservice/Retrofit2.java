@@ -11,12 +11,15 @@ package com.example.android.popularmovies.apiservice;
 //JSON Formatter & Validator http://api.themoviedb.org/3/movie/{id}/videos?api_key=[YOUR_API_KEY]
 //JSON Formatter & Validator http://api.themoviedb.org/3/movie/{id}/reviews?api_key=[YOUR_API_KEY]
 
+import com.example.android.popularmovies.BuildConfig;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Retrofit2 {
 
-    public static final String BASE_URL = "http://api.themoviedb.org/3/";
+    private static final String TAG = "retrofit2";
+    public static final String apiKey = BuildConfig.MOVIE_DB_API_KEY;
+    public static final String BASE_URL = "https://api.themoviedb.org/3/";
 
     public static Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -26,3 +29,4 @@ public class Retrofit2 {
     public static APIService apiService = retrofit.create(APIService.class);
 
 }
+

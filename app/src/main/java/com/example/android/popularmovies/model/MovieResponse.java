@@ -18,6 +18,8 @@ public class MovieResponse implements Parcelable {
     private int totalResults;
     @SerializedName("total_pages")
     private int totalPages;
+    @SerializedName("movies")
+    private List<Movie> movies;
 
     public int getPage() {
         return page;
@@ -32,15 +34,15 @@ public class MovieResponse implements Parcelable {
     }
 
     public List<Movie> getMovies() {
-        return results;
+        return movies;
     }
 
     public void setResults(List<Movie> results) {
         this.results = results;
     }
 
-    public void setMovies(List<Movie> results) {
-        this.results = results;
+    public void setMovies(List<Movie> movies) {
+        this.results = movies;
     }
 
     public int getTotalResults() {
@@ -70,6 +72,7 @@ public class MovieResponse implements Parcelable {
         dest.writeTypedList(this.results);
         dest.writeInt(this.totalResults);
         dest.writeInt(this.totalPages);
+        dest.writeTypedList(this.movies);
     }
 
     public MovieResponse() {
@@ -80,6 +83,7 @@ public class MovieResponse implements Parcelable {
         this.results = in.createTypedArrayList(Movie.CREATOR);
         this.totalResults = in.readInt();
         this.totalPages = in.readInt();
+        this.movies = in.createTypedArrayList(Movie.CREATOR);
     }
 
     public static final Parcelable.Creator<MovieResponse> CREATOR = new Parcelable.Creator<MovieResponse>() {

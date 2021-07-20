@@ -1,19 +1,19 @@
 package com.example.android.popularmovies.activity;
 
-import android.app.LoaderManager;
-import android.content.ContentValues;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.content.Loader;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.os.Parcelable;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,8 +24,6 @@ import com.example.android.popularmovies.adapter.ReviewAdapter;
 import com.example.android.popularmovies.adapter.VideoAdapter;
 import com.example.android.popularmovies.apiservice.APIService;
 import com.example.android.popularmovies.apiservice.Retrofit2;
-import com.example.android.popularmovies.data.FavoriteContract;
-import com.example.android.popularmovies.data.FavoriteDbHelper;
 import com.example.android.popularmovies.model.Movie;
 
 import com.example.android.popularmovies.model.Review;
@@ -39,18 +37,22 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import com.example.android.popularmovies.data.FavoriteContract.FavoriteEntry;
+import com.example.android.popularmovies.roomdatabase.MoviesRepository;
 
-public class DetailActivity extends AppCompatActivity  implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+public class  DetailActivity extends AppCompatActivity {
+
+    private ImageView favoriteClick;
 
     private static final String LOG_TAG = DetailActivity.class.getSimpleName();
 
     private static final String TAG = "detailactivity";
+
     Movie Movies;
-    int movie_id;
+    private int id;
     String key;
-    String movieIdentification, movieThumbnail, movieTitle, dateOfRelease, userRating, movieSynopsis;
+    String movieIdentification, movieThumbnail, movieTitle, dateOfRelease, movieSynopsis;
+    Double moviePopularity;
+    Double userRating;
     TextView MovieId;
     ImageView posterPath;
     TextView OriginalTitle;
@@ -59,36 +61,47 @@ public class DetailActivity extends AppCompatActivity  implements
     TextView Overview;
     Video Videos;
     Review Reviews;
-    private ArrayList<Movie> movieList = new ArrayList<Movie>();
+    private ArrayList<Movie> movies = new ArrayList<Movie>();
     private ArrayList<Video> videoList = new ArrayList<Video>();
     private ArrayList<Review> reviewList = new ArrayList<Review>();
     private VideoAdapter videoAdapter;
     private ReviewAdapter reviewAdapter;
     private RecyclerView videoRecyclerView;
     private RecyclerView reviewRecyclerView;
-    private Boolean hasFavorite = false;
+
     private ImageView FavoriteIcon;
 
-    private static final String IMAGE_URI = "IMAGE_URI";
-    private Uri imageUri;
     private ImageView ImageImageView;
     private TextView ImageTextView;
-    public static final String CONTENT_URI = "URI";
-    private Uri CurrentFavoriteUri;
-
-    private FavoriteDbHelper favoriteDbHelper;
 
     private Intent shareIntent;
 
     String apiKey = BuildConfig.MOVIE_DB_API_KEY;
 
+    private LinearLayoutManager linearLayoutManager;
+
+    private Parcelable savedVideoRecyclerLayoutState;
+    private Parcelable savedReviewRecyclerLayoutState;
+    private static final String BUNDLE_VIDEO_RECYCLER_VIEW = "bundleVideoRecyclerView";
+    private static final String BUNDLE_REVIEW_RECYCLER_VIEW = "bundleReviewRecyclerView";
+
+    private ScrollView mScrollView;
+
+    private MoviesRepository moviesRepository;
+
+    private Boolean hasFavorite = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        moviesRepository = MoviesRepository.getInstance(this);
+
         Log.d(TAG, "onCreate Lifecycle invoked");
 
         setContentView(R.layout.activity_detail);
+
+        mScrollView = (ScrollView) findViewById(R.id.scrollview_detail);
 
         MovieId = (TextView) findViewById(R.id.movie_id);
         posterPath = (ImageView) findViewById(R.id.posterPath);
@@ -102,68 +115,136 @@ public class DetailActivity extends AppCompatActivity  implements
         //http://www.developerphil.com/parcelable-vs-serializable/
         //https://guides.codepath.com/android/using-parcelable
 
-        final Intent intent = getIntent();
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
 
-        if (intent.hasExtra("movie")) {
-            Movies = getIntent().getParcelableExtra("movie");
+            Movies = getIntent().getParcelableExtra("movies");
+            id = bundle.getInt("id");
+            movieThumbnail = bundle.getString("moviePosterPath");
+            movieTitle = bundle.getString("movieTitle");
+            dateOfRelease = bundle.getString("movieReleaseDate");
+            userRating = bundle.getDouble("movieAverageRating");
+            moviePopularity = bundle.getDouble("moviePopularity");
+            movieSynopsis = bundle.getString("movieOverview");
 
-            movieIdentification = Integer.toString(Movies.getId());
-            movieThumbnail = Movies.getPosterPath();
-            movieTitle = Movies.getOriginalTitle();
-            dateOfRelease = Movies.getReleaseDate();
-            userRating = Double.toString(Movies.getVoteAverage());
-            movieSynopsis = Movies.getOverview();
+            //movieIdentification = Integer.toString(Movies.getId());
+            //movieThumbnail = Movies.getPosterPath();
+            //movieTitle = Movies.getOriginalTitle();
+            //dateOfRelease = Movies.getReleaseDate();
+            //userRating = Double.toString(Movies.getVoteAverage());
+            //movieSynopsis = Movies.getOverview();
 
-            movie_id = Movies.getId();
+
+            Log.d(TAG, "DetailActivity");
+            Log.d(TAG, "Id: " + id);
+            Log.d(TAG, "Thumbnail: " + movieThumbnail);
+            Log.d(TAG, "Title: " + movieTitle);
+            Log.d(TAG, "Release Date: " + dateOfRelease);
+            Log.d(TAG, "User Rating: " + userRating);
+            Log.d(TAG, "Popularity: " + moviePopularity);
+            Log.d(TAG, "Overview: " + movieSynopsis);
 
             final String base_url = "http://image.tmdb.org/t/p/";
             final String file_size = "w500/";
             final String posterPathString = Movies.getPosterPath();
 
-            Glide.with(this)
-                    .load(base_url + file_size + posterPathString)
-                    .placeholder(R.drawable.placeholderimagemainactivity)
-                    .into(posterPath);
-
-            MovieId.setText(movieIdentification);
-            OriginalTitle.setText(movieTitle);
-            ReleaseDate.setText(dateOfRelease);
-            VoteAverage.setText(userRating);
-            Overview.setText(movieSynopsis);
-
+            if(movieThumbnail==null){
+                posterPath.setVisibility(View.GONE);
+            }else {
+                Glide.with(this)
+                        .load(base_url + file_size + posterPathString)
+                        .placeholder(R.drawable.placeholderimagemainactivity)
+                        .into(posterPath);
+            }
+            if(movieIdentification==null){
+                MovieId.setVisibility(View.GONE);
+            }else {
+                MovieId.setText(movieIdentification);
+            }
+            if(movieTitle==null){
+                OriginalTitle.setVisibility(View.GONE);
+            }else {
+                OriginalTitle.setText(movieTitle);
+            }
+            if(dateOfRelease==null){
+                ReleaseDate.setVisibility(View.GONE);
+            }else {
+                ReleaseDate.setText(dateOfRelease);
+            }
+            if(userRating==null){
+                VoteAverage.setVisibility(View.GONE);
+            }else {
+                VoteAverage.setText(Double.toString(userRating));
+            }
+            if(movieSynopsis==null){
+                Overview.setVisibility(View.GONE);
+            }else {
+                Overview.setText(movieSynopsis);
+            }
         } else {
             Toast.makeText(this, "Insert your API KEY first from The Movie Db", Toast.LENGTH_SHORT).show();
         }
 
         onLoadVideos();
 
-        videoRecyclerView = (RecyclerView) findViewById(R.id.videos_recycler_view);
-        videoRecyclerView.setAdapter(videoAdapter);
-
         onLoadReviews();
 
-        isFavorite();
+        //https://github.com/amardeshbd/android-recycler-view-wrap-content/blob/master/app/src/main/java/info/hossainkhan/recyclerviewdemo/RecyclerViewNestedScrollviewFixDemoFragment.java
+
+        videoRecyclerView = (RecyclerView) findViewById(R.id.videos_recycler_view);
+        videoRecyclerView.setAdapter(videoAdapter);
+        videoRecyclerView.setNestedScrollingEnabled(false);
+
+        reviewRecyclerView = (RecyclerView) findViewById(R.id.reviews_recycler_view);
+        reviewRecyclerView.setAdapter(reviewAdapter);
+        reviewRecyclerView.setNestedScrollingEnabled(false);
+
+        //mScrollView.setSmoothScrollingEnabled(true);
+
+        if (savedInstanceState != null) {
+            movies = savedInstanceState.getParcelableArrayList("movie");
+            savedVideoRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_VIDEO_RECYCLER_VIEW);
+            savedReviewRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_REVIEW_RECYCLER_VIEW);
+        }
 
         //https://stackoverflow.com/questions/4193167/change-source-image-for-image-view-when-pressed?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
         //https://stackoverflow.com/questions/6083641/android-imageviews-onclicklistener-does-not-work?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 
-        final ImageView favoriteClick = (ImageView) findViewById(R.id.favorite);
+        favoriteClick = (ImageView) findViewById(R.id.favorite);
 
         favoriteClick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (hasFavorite) {
-                    deleteFavorite();
+                    moviesRepository.deleteFavorite(id);
                     favoriteClick.setImageResource(R.drawable.ic_not_favorite);
+                    hasFavorite = false;
+                    Toast.makeText(getApplicationContext(), "Removed from Favorites" + " " + movieTitle, Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Removed from Favorites - Id: " + id);
+                    Log.d(TAG, "Removed from Favorites - Original Title: " + movieTitle);
+                    Log.d(TAG, "Removed from Favorites - Poster Path: " + movieThumbnail);
+                    Log.d(TAG, "Removed from Favorites - Release Date: " + dateOfRelease);
+                    Log.d(TAG, "Removed from Favorites - Popularity: " + moviePopularity);
+                    Log.d(TAG, "Removed from Favorites - Vote Average: " + userRating);
+                    Log.d(TAG, "Removed from Favorites - Overview: " + movieSynopsis);
 
                 } else {
-                    saveFavorite();
+                    moviesRepository.saveFavorite(id, movieThumbnail, movieTitle, dateOfRelease, userRating, movieSynopsis);
                     favoriteClick.setImageResource(R.drawable.ic_favorite);
+                    hasFavorite = true;
+                    Toast.makeText(getApplicationContext(), "Added to Favorites"+ " " + movieTitle, Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Added to Favorites - Id: " + id);
+                    Log.d(TAG, "Added to Favorites - Original Title: " + movieTitle);
+                    Log.d(TAG, "Added to Favorites - Poster Path: " + movieThumbnail);
+                    Log.d(TAG, "Added to Favorites - Release Date: " + dateOfRelease);
+                    Log.d(TAG, "Added from Favorites - Popularity: " + moviePopularity);
+                    Log.d(TAG, "Added to Favorites - Vote Average: " + userRating);
+                    Log.d(TAG, "Added to Favorites - Overview: " + movieSynopsis);
                 }
             }
         });
 
-        if(isFavorite()){
+        if(isSaved()){
             favoriteClick.setImageResource(R.drawable.ic_favorite);
         }else {
             favoriteClick.setImageResource(R.drawable.ic_not_favorite);
@@ -194,6 +275,25 @@ public class DetailActivity extends AppCompatActivity  implements
             }
         });
 
+    }
+
+    public boolean isSaved() {
+        if (movieTitle != null) {
+            moviesRepository.isSaved(id).observe(this, new Observer<Boolean>() {
+                @Override
+                public void onChanged(@Nullable Boolean favoriteBoolean) {
+                    if (favoriteBoolean != null) {
+                        hasFavorite = favoriteBoolean;
+                        if (hasFavorite) {
+                            favoriteClick.setImageResource(R.drawable.ic_favorite);
+                            hasFavorite = true;
+                        }
+                    }
+                }
+            });
+        }
+
+        return hasFavorite;
     }
 
     //https://developer.android.com/guide/components/activities/activity-lifecycle
@@ -254,14 +354,14 @@ public class DetailActivity extends AppCompatActivity  implements
                 if (videoList.size()>0) {
 
                     Log.d(TAG, "Number of videos received: " + videoList.size());
-                    Log.d(TAG, "Id:" + videoList.get(0).getId());
-                    Log.d(TAG, "Language:" + videoList.get(0).getIso_639_1());
-                    Log.d(TAG, "Country:" + videoList.get(0).getIso_3166_1());
-                    Log.d(TAG, "Key:" + videoList.get(0).getKey());
-                    Log.d(TAG, "Name:" + videoList.get(0).getName());
-                    Log.d(TAG, "Site:" + videoList.get(0).getSite());
-                    Log.d(TAG, "Size:" + videoList.get(0).getSize());
-                    Log.d(TAG, "Type:" + videoList.get(0).getType());
+                    Log.d(TAG, "Id: " + videoList.get(0).getId());
+                    Log.d(TAG, "Language: " + videoList.get(0).getIso_639_1());
+                    Log.d(TAG, "Country: " + videoList.get(0).getIso_3166_1());
+                    Log.d(TAG, "Key: " + videoList.get(0).getKey());
+                    Log.d(TAG, "Name: " + videoList.get(0).getName());
+                    Log.d(TAG, "Site: " + videoList.get(0).getSite());
+                    Log.d(TAG, "Size: " + videoList.get(0).getSize());
+                    Log.d(TAG, "Type: " + videoList.get(0).getType());
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "No videos found", Toast.LENGTH_SHORT).show();
@@ -321,10 +421,10 @@ public class DetailActivity extends AppCompatActivity  implements
 
                 if (reviewList.size()>0) {
                     Log.d(TAG, "Number of reviews received: " + reviewList.size());
-                    Log.d(TAG, "Author:" + reviewList.get(0).getAuthor());
-                    Log.d(TAG, "Content:" + reviewList.get(0).getContent());
-                    Log.d(TAG, "Id:" + reviewList.get(0).getId());
-                    Log.d(TAG, "Url:" + reviewList.get(0).getUrl());
+                    Log.d(TAG, "Author: " + reviewList.get(0).getAuthor());
+                    Log.d(TAG, "Content: " + reviewList.get(0).getContent());
+                    Log.d(TAG, "Id: " + reviewList.get(0).getId());
+                    Log.d(TAG, "Url: " + reviewList.get(0).getUrl());
                 }
                 else {
                         Toast.makeText(getApplicationContext(), "No reviews found", Toast.LENGTH_SHORT).show();
@@ -340,14 +440,27 @@ public class DetailActivity extends AppCompatActivity  implements
         });
     }
 
+    //https://stackoverflow.com/questions/27816217/how-to-save-recyclerviews-scroll-position-using-recyclerview-state
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelableArrayList("movie", movieList);
-        //outState.putParcelableArrayList("video", videoList);
-        //outState.putParcelableArrayList("review", reviewList);
-        //outState.putParcelable("movie", Movies);
+        outState.putParcelableArrayList("movie", movies);
+
+        //https://stackoverflow.com/questions/27816217/how-to-save-recyclerviews-scroll-position-using-recyclerview-state
+
+        //https://stackoverflow.com/questions/36568168/how-to-save-scroll-position-of-recyclerview-in-android
+
+        outState.putParcelable(BUNDLE_VIDEO_RECYCLER_VIEW, videoRecyclerView.getLayoutManager().onSaveInstanceState());
+        outState.putParcelable(BUNDLE_REVIEW_RECYCLER_VIEW, reviewRecyclerView.getLayoutManager().onSaveInstanceState());
+
+        //https://stackoverflow.com/questions/28658579/refreshing-data-in-recyclerview-and-keeping-its-scroll-position
+
+        //https://stackoverflow.com/questions/29208086/save-the-position-of-scrollview-when-the-orientation-changes
+
+        outState.putIntArray("ARTICLE_SCROLL_POSITION",
+                new int[]{ mScrollView.getScrollX(), mScrollView.getScrollY()});
 
     }
 
@@ -355,183 +468,23 @@ public class DetailActivity extends AppCompatActivity  implements
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        movieList = savedInstanceState.getParcelableArrayList("movie");
-        //videoList = savedInstanceState.getParcelableArrayList("video");
-        //reviewList = savedInstanceState.getParcelableArrayList("review");
-        //Movies = (Movie) savedInstanceState.getParcelable("movie");
+        //https://stackoverflow.com/questions/27816217/how-to-save-recyclerviews-scroll-position-using-recyclerview-state
 
-    }
+        if (savedInstanceState != null) {
+            movies = savedInstanceState.getParcelableArrayList("movie");
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        // Since the editor shows all inventory attributes, define a projection that contains
-        // all columns from the inventory table
+            //https://stackoverflow.com/questions/27816217/how-to-save-recyclerviews-scroll-position-using-recyclerview-state
 
-        String[] projection = {
-                FavoriteEntry._ID,
-                FavoriteEntry.COLUMN_FAVORITE_MOVIEID,
-                FavoriteEntry.COLUMN_FAVORITE_ORIGINALTITLE,
-                FavoriteEntry.COLUMN_FAVORITE_POSTERPATH,
-                FavoriteEntry.COLUMN_FAVORITE_RELEASEDATE,
-                FavoriteEntry.COLUMN_FAVORITE_VOTEAVERAGE,
-                FavoriteEntry.COLUMN_FAVORITE_OVERVIEW };
+            savedVideoRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_VIDEO_RECYCLER_VIEW);
+            savedReviewRecyclerLayoutState = savedInstanceState.getParcelable(BUNDLE_REVIEW_RECYCLER_VIEW);
 
-        // This loader will execute the ContentProvider's query method on a background thread
-
-        return new CursorLoader(this,   // Parent activity context
-                CurrentFavoriteUri,         // Query the content URI for the current inventory
-                projection,             // Columns to include in the resulting Cursor
-                null,                   // No selection clause
-                null,                   // No selection arguments
-                null);                  // Default sort order
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        // Bail early if the cursor is null or there is less than 1 row in the cursor
-        if (cursor == null || cursor.getCount() < 1) {
-            return;
+            final int[] position = savedInstanceState.getIntArray("ARTICLE_SCROLL_POSITION");
+            if(position != null)
+                mScrollView.postDelayed(new Runnable() {
+                    public void run() {
+                        mScrollView.scrollTo(position[0], position[1]);}
+                }, 100);
         }
-
-        ArrayList<Movie> movieList = new ArrayList<Movie>();
-        while (cursor.moveToNext()) {
-            MovieId.setText(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_MOVIEID)));
-            OriginalTitle.setText(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_ORIGINALTITLE)));
-            posterPath.setImageURI(Uri.parse(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_POSTERPATH))));
-            ReleaseDate.setText(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_RELEASEDATE)));
-            VoteAverage.setText(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_VOTEAVERAGE)));
-            Overview.setText(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_OVERVIEW)));
-        }
-
-        cursor.close();
-
-    }
-
-    //https://stackoverflow.com/questions/20415309/android-sqlite-how-to-check-if-a-record-exists
-    //https://stackoverflow.com/questions/15933592/check-if-content-resolver-has-value
-
-    public boolean isFavorite() {
-
-        // Add the String you are searching by here.
-        // Put it in an array to avoid an unrecognized token error
-        Cursor cursor = getApplicationContext().getContentResolver().query(FavoriteContract.FavoriteEntry.CONTENT_URI, new String[]{FavoriteEntry.COLUMN_FAVORITE_ORIGINALTITLE}, FavoriteEntry.COLUMN_FAVORITE_MOVIEID + " = " + movieIdentification, null, null);
-
-        while (cursor.moveToNext()) {
-            if (Movies.getOriginalTitle().equals(cursor.getString(cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_ORIGINALTITLE)))) {
-                hasFavorite = true;
-            }
-        }return hasFavorite;
-    }
-
-    //https://stackoverflow.com/questions/44905046/how-to-store-data-fetch-from-retrofit-to-sqlite-database
-    //https://discussions.udacity.com/t/favorite-and-un-favorite-implementation/651708
-
-    //https://discussions.udacity.com/t/question-about-the-favorites-button/640499/9
-
-    private void saveFavorite() {
-
-        final Intent intent = getIntent();
-
-        Movies = getIntent().getParcelableExtra("movie");
-
-        String movieIdentification = Integer.toString(Movies.getId());
-        String movieThumbnail = Movies.getPosterPath();
-        String movieTitle = Movies.getOriginalTitle();
-        String dateOfRelease = Movies.getReleaseDate();
-        String userRating = Double.toString(Movies.getVoteAverage());
-        String movieSynopsis = Movies.getOverview();
-
-        ContentValues values = new ContentValues();
-
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_MOVIEID, "" + movieIdentification);
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_ORIGINALTITLE, "" + movieTitle);
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_POSTERPATH, "" + movieThumbnail); //
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_RELEASEDATE, "" + dateOfRelease);
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_VOTEAVERAGE, "" + userRating);
-        values.put(FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_OVERVIEW, "" + movieSynopsis);
-
-        Toast.makeText(this, "Added to Favorites", Toast.LENGTH_SHORT).show();
-
-        Log.d(TAG, "Added to Favorites - Movie Id:" + Movies.getId());
-        Log.d(TAG, "Added to Favorites - Original Title:" + Movies.getOriginalTitle());
-        Log.d(TAG, "Added to Favorites - Poster Path:" + Movies.getPosterPath());
-        Log.d(TAG, "Added to Favorites - Release Date:" + Movies.getReleaseDate());
-        Log.d(TAG, "Added to Favorites - Vote Average:" + Movies.getVoteAverage());
-        Log.d(TAG, "Added to Favorites - Overview:" + Movies.getOverview());
-
-        // Determine if this is a new or existing favorite by checking if mCurrentFavoriteUri is null or not
-        if (CurrentFavoriteUri == null) {
-
-            // This is a NEW favorite, so insert new favorite into the provider,
-            // returning the content URI for the new favorite.
-            Uri newUri = getContentResolver().insert(FavoriteContract.FavoriteEntry.CONTENT_URI, values);
-
-            // Show a toast message depending on whether or not the insertion was successful.
-            if (newUri == null) {
-                // If the new content URI is null, then there was an error with insertion.
-                Toast.makeText(this, getString(R.string.editor_insert_favorite_failed),
-                        Toast.LENGTH_SHORT).show();
-            } else {
-                // Otherwise, the insertion was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.editor_insert_favorite_successful),
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        hasFavorite = true;
-
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-        MovieId.setText("");
-        OriginalTitle.setText("");
-        posterPath.setImageBitmap(null);
-        ReleaseDate.setText("");
-        VoteAverage.setText("");
-        Overview.setText("");
-
-    }
-
-    private void deleteFavorite() {
-
-        final Intent intent = getIntent();
-
-        Movies = getIntent().getParcelableExtra("movie");
-
-        movieIdentification = Integer.toString(Movies.getId());
-        movieThumbnail = Movies.getPosterPath();
-        movieTitle = Movies.getOriginalTitle();
-        dateOfRelease = Movies.getReleaseDate();
-        userRating = Double.toString(Movies.getVoteAverage());
-        movieSynopsis = Movies.getOverview();
-
-        if (FavoriteContract.FavoriteEntry.CONTENT_URI != null) {
-
-            int favoriteDeleted = getContentResolver().delete(FavoriteContract.FavoriteEntry.CONTENT_URI, (FavoriteContract.FavoriteEntry.COLUMN_FAVORITE_MOVIEID + "=" + movieIdentification), null);
-
-            // Show a toast message depending on whether or not the delete was successful.
-            if (favoriteDeleted == 0) {
-                // If no rows were deleted, then there was an error with the delete.
-                Toast.makeText(this, getString(R.string.detail_delete_favorite_failed),
-                        Toast.LENGTH_SHORT).show();
-            } else {
-                // Otherwise, the delete was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.detail_delete_favorite_successful),
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        Toast.makeText(getApplicationContext(), "Removed from Favorites", Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "Removed from Favorites - Movie Id:" + Movies.getId());
-        Log.d(TAG, "Removed from Favorites - Original Title:" + Movies.getOriginalTitle());
-        Log.d(TAG, "Removed from Favorites - Poster Path:" + Movies.getPosterPath());
-        Log.d(TAG, "Removed from Favorites - Release Date:" + Movies.getReleaseDate());
-        Log.d(TAG, "Removed from Favorites - Vote Average:" + Movies.getVoteAverage());
-        Log.d(TAG, "Removed from Favorites - Overview:" + Movies.getOverview());
-
-        hasFavorite = false;
     }
 
 }
