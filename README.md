@@ -46,17 +46,19 @@ You’ll modify the existing sorting criteria for the main view to include an ad
 
 ![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/PopularMovies.png)
 
-![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/Detail%20Screen.png)
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/Detail%20Activity.png)
 
-![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/Add%20to%20Favorites.png)
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/YouTubeHorizontal.png)
 
-![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/Videos%20and%20Reviews.png)
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/YouTubeVertical.png)
 
-![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/YouTube%20Activity%20Portrait%20Still%20Image.png)
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/TopRatedMovies.png)
 
-![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/Favorite%20Movies.png)
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/UpcomingMovies.png)
 
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/SearchMovies.png)
 
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/NowPlayingMovies.png)
 
-
+![Alt Text](https://github.com/jfussinger/PopularMovies/blob/Revised/FavoriteMovies.png)
 
